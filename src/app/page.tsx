@@ -25,7 +25,7 @@ export default function HomePage() {
     { icon: WrenchScrewdriverIcon, label: "수리/공구/인테리어", href: "/category/repair" },
   ];
 
-  const featuredProjects = [
+  const productList = [
     {
       id: 1,
       title: "아파트 베란다 인테리어 공구 빌려주세요",
@@ -68,7 +68,7 @@ export default function HomePage() {
     },
   ];
 
-  const recentActivity = [
+  const communityPostList = [
     { date: "2024-03-15", title: "길 잃은 고양이 찾아드려요" },
     { date: "2024-03-14", title: "길 잃은 고양이 보셨나요?ㅜㅜ" },
     { date: "2024-03-15", title: "길 잃은 고양이 찾아드려요" },
@@ -144,7 +144,7 @@ export default function HomePage() {
             </p>
           </div>
           <Link
-            href="/projects"
+            href="/products"
             className="flex items-center text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] 
                      font-medium transition-colors"
           >
@@ -153,14 +153,14 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProjects.map((project) => (
+          {productList.map((product) => (
             <div
-              key={project.id}
+              key={product.id}
               className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden
                        hover:shadow-lg transition-shadow duration-200"
             >
               <div className="relative h-40 bg-gray-200">
-                <Image src={project.image} alt={project.title} fill className="object-cover" />
+                <Image src={product.image} alt={product.title} fill className="object-cover" />
                 <div className="absolute top-3 right-3">
                   <span
                     className="bg-[var(--color-highlight)] text-[var(--color-text-primary)] 
@@ -173,27 +173,27 @@ export default function HomePage() {
 
               <div className="p-4">
                 <h3 className="font-semibold text-[var(--color-text-primary)] mb-2 line-clamp-2">
-                  {project.title}
+                  {product.title}
                 </h3>
 
                 <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2">
                   <MapPinIcon className="w-4 h-4 mr-1" />
-                  {project.location}
+                  {product.location}
                 </div>
 
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium ml-1">{project.rating}</span>
+                    <span className="text-sm font-medium ml-1">{product.rating}</span>
                     <span className="text-sm text-[var(--color-text-secondary)] ml-1">
-                      ({project.reviews})
+                      ({product.reviews})
                     </span>
                   </div>
-                  <span className="text-[var(--color-primary)] font-bold">{project.price}</span>
+                  <span className="text-[var(--color-primary)] font-bold">{product.price}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-1">
-                  {project.tags.map((tag, index) => (
+                  {product.tags.map((tag, index) => (
                     <span
                       key={index}
                       className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] 
@@ -217,7 +217,7 @@ export default function HomePage() {
 
         <div className="bg-white rounded-xl border border-[var(--color-border)] p-6">
           <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
+            {communityPostList.map((post, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between py-3 border-b 
@@ -225,9 +225,9 @@ export default function HomePage() {
               >
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3"></div>
-                  <span className="text-[var(--color-text-primary)]">{activity.title}</span>
+                  <span className="text-[var(--color-text-primary)]">{post.title}</span>
                 </div>
-                <span className="text-sm text-[var(--color-text-secondary)]">{activity.date}</span>
+                <span className="text-sm text-[var(--color-text-secondary)]">{post.date}</span>
               </div>
             ))}
           </div>
