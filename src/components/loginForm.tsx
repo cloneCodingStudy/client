@@ -16,14 +16,21 @@ export default function LoginForm() {
   return (
     <div className="flex flex-col items-center">
       {!showForm ? (
-        <button
-          type="button"
-          onClick={() => setShowForm(true)}
-          className="cursor-pointer mb-6 flex w-full max-w-sm items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 transition"
-        >
-          <PaperAirplaneIcon className="h-5 w-5 text-gray-600" />
-          이메일로 로그인
-        </button>
+        <>
+          <p className=" text-primary-purple mb-2 text-center text-3xl font-bold">
+            환영합니다 👋 <br />
+          </p>
+          <p className="mb-10 text-primary-purple text-center ">쉐어링 커뮤니티 빌려요입니다.</p>
+
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="cursor-pointer mb-6 flex w-full max-w-sm items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white py-3 font-semibold text-gray-700 hover:bg-gray-50 transition"
+          >
+            <PaperAirplaneIcon className="h-5 w-5 text-gray-600" />
+            이메일로 로그인
+          </button>
+        </>
       ) : (
         // 로그인 버튼을 누르면 입력창 뜸
         <form onSubmit={handleSubmit} className="mb-6 flex w-full max-w-sm flex-col gap-4">
