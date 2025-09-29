@@ -76,11 +76,8 @@ export default function LoginForm() {
         </Link>
       </p>
       <p className="mt-2 text-sm text-gray-500">
-        <Link
-          href="/reset-password"
-          className="font-semibold text-[var(--color-primary)] hover:underline"
-        >
-          비밀번호 찾기
+        <Link href="/find" className="font-semibold text-[var(--color-primary)] hover:underline">
+          이메일/비밀번호 찾기
         </Link>
       </p>
     </div>
