@@ -1,18 +1,21 @@
 "use client";
 
 import { getCommunityPosts, searchCommunityPosts } from "@/data/actions/community.api";
+import useUserStore from "@/store/useUserStore";
 import { CommunityPost } from "@/types/community";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState("전체");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user } = useUserStore();
   const router = useRouter();
 
   // 게시글 목록 조회
@@ -25,6 +28,16 @@ export default function CommunityPage() {
     };
     fetchPosts();
   }, []);
+
+  //글 작성 버튼 클릭 시
+  const handleClick = () => {
+    if (!user) {
+      toast.error("로그인 후 글을 작성할 수 있습니다.");
+      router.push("/login");
+      return;
+    }
+    router.push("/community/write");
+  };
 
   // 게시글 검색
   const handleSearch = async () => {
@@ -126,7 +139,7 @@ export default function CommunityPage() {
 
         {/* 작성 버튼 */}
         <button
-          onClick={() => router.push("/community/write")}
+          onClick={handleClick}
           className="cursor-pointer px-4 py-2 rounded-xl border-2 text-primary-purple text-md font-semibold hover:text-primary-purple-alt transition"
         >
           글 작성하기
