@@ -3,14 +3,51 @@
 import Link from "next/link";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  //로그인
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); //새로고침 방지
+
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: email,
+          password: password,
+        }),
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        //엑세스 토큰 가져오기
+        const accessToken = res.headers.get("access");
+
+        if (accessToken) {
+          localStorage.setItem("accessToken", accessToken);
+          toast.success("로그인에 성공했습니다.");
+          router.push("/"); // 메인으로 이동
+        } else {
+          toast.error("로그인 정보를 받아오지 못했습니다.");
+        }
+      } else if (res.status === 401) {
+        toast.error("이메일 또는 비밀번호가 잘못되었습니다.");
+      } else {
+        toast.error("로그인에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("서버 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -33,7 +70,7 @@ export default function LoginForm() {
         </>
       ) : (
         // 로그인 버튼을 누르면 입력창 뜸
-        <form onSubmit={handleSubmit} className="mb-6 flex w-full max-w-sm flex-col gap-4">
+        <form onSubmit={onSubmit} className="mb-6 flex w-full max-w-sm flex-col gap-4">
           <input
             type="email"
             placeholder="이메일을 입력하세요"

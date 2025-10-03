@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { User } from "@/types/user";
 import useUserStore from "@/store/useUserStore";
+import { useEffect, useState } from "react";
 
 type FormValues = {
   email: string;
@@ -26,14 +27,41 @@ export default function SignupForm() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<FormValues>();
 
   const router = useRouter();
+  const nickname = watch("nickname");
+  const email = watch("email");
+
+  const [nicknameCheck, setNicknameCheck] = useState(false);
+  const [emailCheck, setEmailCheck] = useState(false);
+
+  //닉네임 상태 초기화
+  useEffect(() => {
+    setNicknameCheck(false);
+  }, [nickname]);
+
+  //이메일 상태 초기화
+  useEffect(() => {
+    setEmailCheck(false);
+  }, [email]);
 
   // 회원가입 완료 시
   const onSubmit = async (data: FormValues) => {
+    //닉네임 중복확인 안했을 때
+    if (!nicknameCheck) {
+      toast.error("닉네임 중복 확인을 해주세요.");
+      return;
+    }
+    //이메일 인증 안했을 때
+    if (!emailCheck) {
+      toast.error("이메일 인증을 해주세요");
+      return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/user/`, {
+      const res = await fetch(`${API_URL}/user/sign-up`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -68,26 +96,65 @@ export default function SignupForm() {
     }
   };
 
-  //test 코드
-  // const testSubmit = async (data: FormValues) => {
-  //   try {
-  //     console.log("회원가입 요청 데이터:", data);
-  //     localStorage.setItem("accessToken", "dummy-token-123");
-
-  //     toast.success(`${data.name}님 환영합니다 🤗`); //토스트로 메시지 띄워주기
-
-  //     setTimeout(() => {
-  //       router.push("/"); //메인으로 이동
-  //     }, 1500);
-  //   } catch (err) {
-  //     console.error(err);
-  //     toast.error("회원가입 요청 중 오류가 발생했습니다.");
-  //   }
-  // };
-
   //닉네임 중복 확인 시
+  const handleCheckNickname = async () => {
+    //닉네임 없으면
+    if (!nickname) {
+      toast.error("닉네임을 입력하세요.");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/user/duplicate-check?nickName=${nickname}`, {
+        method: "GET",
+      });
+
+      console.log("Res:", res);
+      const result = await res.json();
+      console.log("result:", result);
+
+      if (res.ok) {
+        toast.success("사용 가능한 닉네임 입니다.");
+        setNicknameCheck(true); //닉네임 중복 체크 상태 true로 변경
+      } else {
+        toast.error("이미 사용 중인 닉네임 입니다. 다른 닉네임을 사용해 주세요.");
+        setNicknameCheck(false);
+      }
+    } catch (err) {
+      toast.error("닉네임 확인 중 오류가 발생했습니다.");
+    }
+  };
 
   //이메일 인증 시
+  const handleCheckEmail = async () => {
+    //닉네임 없으면
+    if (!email) {
+      toast.error("이메일을 입력하세요.");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_URL}/mail/send-verification-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+        }),
+      });
+
+      console.log("Res:", res);
+      const result = await res.json();
+      console.log("result:", result);
+
+      if (res.ok) {
+        toast.success("인증 메일을 발송했습니다.");
+        setEmailCheck(true);
+      } else {
+        toast.error("인증 메일 발송에 실패했습니다.");
+        setEmailCheck(false);
+      }
+    } catch (err) {
+      toast.error("이메일 인증 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <form
@@ -119,6 +186,7 @@ export default function SignupForm() {
           />
           <button
             type="button"
+            onClick={handleCheckEmail}
             className="shrink-0 rounded-lg cursor-pointer bg-primary-purple border hover:opacity-90 border-[var(--color-border)] px-4 py-2 text-white font-semibold"
           >
             이메일 인증
@@ -189,6 +257,7 @@ export default function SignupForm() {
             }`}
           />
           <button
+            onClick={handleCheckNickname}
             type="button"
             className="shrink-0 rounded-lg cursor-pointer  bg-gray-200 px-4 py-2 font-semibold border border-[var(--color-border)] hover:bg-gray-300"
           >

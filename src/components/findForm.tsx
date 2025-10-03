@@ -10,6 +10,7 @@ type FindEmail = {
 
 type FindPassword = {
   email: string;
+  name: string;
 };
 export default function FindForm() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -36,7 +37,7 @@ export default function FindForm() {
   // 이메일 찾기 시
   const onFindEmail = async (data: FindEmail) => {
     try {
-      const res = await fetch(`${API_URL}/user/`, {
+      const res = await fetch(`${API_URL}/user/find-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -63,10 +64,13 @@ export default function FindForm() {
   // 비밀번호 찾기 시
   const onFindPw = async (data: FindPassword) => {
     try {
-      const res = await fetch(`${API_URL}/user/`, {
+      const res = await fetch(`${API_URL}/mail/send-reset-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          email: data.email,
+          name: data.name,
+        }),
       });
 
       console.log("Res:", res);
@@ -175,6 +179,22 @@ export default function FindForm() {
             })}
             className={`w-full rounded-lg border px-4 py-3 my-3 focus:outline-none focus:ring-2 ${
               pwErrors.email
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-[var(--color-primary)]"
+            }`}
+          />
+          <label htmlFor="name" className="block font-medium mt-5 mb-1">
+            가입한 이름을 입력해주세요.
+          </label>
+          <input
+            id="name"
+            type="text"
+            placeholder="이름을 입력하세요"
+            {...registerPw("name", {
+              required: "이름은 필수 입력값입니다.",
+            })}
+            className={`w-full rounded-lg border px-4 py-3 my-3 focus:outline-none focus:ring-2 ${
+              pwErrors.name
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-[var(--color-primary)]"
             }`}

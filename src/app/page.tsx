@@ -12,6 +12,7 @@ import {
   TvIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
+import LocationSection from "@/components/LocationSection";
 
 export default function HomePage() {
   const categories = [
@@ -77,33 +78,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-12">
-      <section className="text-center py-12 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl">
-        <h1 className="text-4xl font-bold text-[var(--color-text-primary)] mb-4">
-          성북동에서 빔 프로젝터 찾고 계신가요?
-        </h1>
-        <p className="text-lg text-[var(--color-text-secondary)] mb-8">
-          대여하고픈 모든 것을 검색해보세요
-        </p>
-
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto relative">
-          <input
-            type="text"
-            placeholder="검색어를 입력해주세요"
-            className="w-full px-6 py-4 text-lg border border-[var(--color-border)] rounded-full 
-                     focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 
-                     focus:ring-[var(--color-primary)]/20 bg-white shadow-sm"
-          />
-          <button
-            className="absolute cursor-pointer right-2 top-1/2 transform -translate-y-1/2 
-                           bg-[var(--color-primary)] px-6 py-2 rounded-full 
-                           hover:bg-[var(--color-primary-hover)] transition-colors"
-          >
-            검색
-          </button>
-        </div>
-      </section>
-
+      <LocationSection />
       {/* Category Section */}
       <section>
         <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">
