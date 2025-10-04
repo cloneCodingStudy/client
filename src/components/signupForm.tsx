@@ -59,12 +59,22 @@ export default function SignupForm() {
       toast.error("이메일 인증을 해주세요");
       return;
     }
+    //매핑
+    const payload = {
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      nickName: data.nickname,
+      phoneNumber: data.phone,
+      birthDate: data.birth,
+      address: data.address,
+    };
 
     try {
       const res = await fetch(`${API_URL}/user/sign-up`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       console.log("Res:", res);
@@ -126,7 +136,7 @@ export default function SignupForm() {
 
   //이메일 인증 시
   const handleCheckEmail = async () => {
-    //닉네임 없으면
+    //이메일 없으면
     if (!email) {
       toast.error("이메일을 입력하세요.");
       return;
