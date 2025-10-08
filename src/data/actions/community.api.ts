@@ -155,9 +155,22 @@ export async function getPresignedUrls(fileNames: string[]) {
 }
 
 /**
- * 커뮤니티 댓글 목록 조회
- */
-
-/**
  * 커뮤니티 댓글 작성
  */
+export async function createCommunityComment(postId: number, comment: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_URL}/community/comment/${postId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ comment }),
+    });
+
+    if (!res.ok) throw new Error("댓글 작성에 실패했습니다.");
+    return true;
+  } catch (err) {
+    console.error("[createCommunityComment]", err);
+    return false;
+  }
+}

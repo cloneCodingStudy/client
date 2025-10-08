@@ -10,6 +10,7 @@ export interface CommunityPost {
   category: CommunityCategory;
   user: CommunityUser[];
   images?: CommunityImage[];
+  comments?: CommunityComment[];
 }
 
 //커뮤니티 카테고리
@@ -29,4 +30,12 @@ export interface CommunityUser {
 export interface CommunityImage {
   id: number;
   imageUrl: string;
+}
+
+//커뮤니티 댓글
+export interface CommunityComment {
+  id: number;
+  author: string;
+  content: string;
+  createdAt: string;
 }
