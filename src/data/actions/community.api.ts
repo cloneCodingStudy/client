@@ -50,10 +50,12 @@ export async function createCommunityPost(data: {
   imageUrls?: string[];
 }): Promise<CommunityPost | null> {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/community`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -81,10 +83,12 @@ export async function updateCommunityPost(
   }
 ): Promise<boolean> {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/community/${postId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -102,8 +106,12 @@ export async function updateCommunityPost(
  */
 export async function deleteCommunityPost(postId: number): Promise<boolean> {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/community/${postId}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     return res.ok;
@@ -159,10 +167,12 @@ export async function getPresignedUrls(fileNames: string[]) {
  */
 export async function createCommunityComment(postId: number, comment: string): Promise<boolean> {
   try {
+    const token = localStorage.getItem("accessToken");
     const res = await fetch(`${API_URL}/community/comment/${postId}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ comment }),
     });
