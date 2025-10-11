@@ -130,6 +130,7 @@ export default function SignupForm() {
         setNicknameCheck(false);
       }
     } catch (err) {
+      console.error(err);
       toast.error("닉네임 확인 중 오류가 발생했습니다.");
     }
   };
@@ -162,6 +163,7 @@ export default function SignupForm() {
         setEmailCheck(false);
       }
     } catch (err) {
+      console.error(err);
       toast.error("이메일 인증 중 오류가 발생했습니다.");
     }
   };

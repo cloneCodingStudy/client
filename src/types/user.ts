@@ -8,6 +8,6 @@ export interface User {
 
 export interface UserState {
   user: User | null;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void;
   resetUser: () => void;
 }

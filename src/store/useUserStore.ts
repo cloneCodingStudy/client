@@ -6,7 +6,7 @@ const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       user: null,
-      setUser: (user: User) => set({ user }),
+      setUser: (user: User | null) => set({ user }),
       resetUser: () => set({ user: null }),
     }),
     {
