@@ -1,5 +1,4 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const token = localStorage.getItem("accessToken");
 
 /**
  * 회원정보 수정
@@ -12,6 +11,7 @@ export async function updateUser(data: {
   address?: string;
 }) {
   try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
     const res = await fetch(`${API_URL}/user/profile`, {
       method: "PUT",
       headers: {
@@ -34,6 +34,7 @@ export async function updateUser(data: {
  */
 export async function deleteUser() {
   try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
     const res = await fetch(`${API_URL}/user/quit`, {
       method: "DELETE",
       headers: {
