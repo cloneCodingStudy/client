@@ -11,9 +11,17 @@ const useUserStore = create<UserState>()(
     }),
     {
       name: "user",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => {
+        if (typeof window !== "undefined") {
+          return sessionStorage;
+        }
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
     }
   )
 );
-
 export default useUserStore;
