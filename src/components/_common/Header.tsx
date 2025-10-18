@@ -29,7 +29,7 @@ export default function Header() {
 
           {/* 네비게이션 메뉴 */}
           <nav className="flex space-x-6 text-[var(--color-text-primary)] font-medium">
-            <Link href="#">대여하기</Link>
+            <Link href="/products">대여하기</Link>
             <Link href="/community">커뮤니티</Link>
           </nav>
         </div>

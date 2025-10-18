@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 export default function LoginForm() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
+
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +35,7 @@ export default function LoginForm() {
 
         if (accessToken) {
           localStorage.setItem("accessToken", accessToken);
+
           toast.success("로그인에 성공했습니다.");
           router.push("/"); // 메인으로 이동
         } else {
