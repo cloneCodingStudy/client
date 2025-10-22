@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   HomeIcon,
@@ -10,23 +8,10 @@ import {
   TicketIcon,
   TruckIcon,
   WrenchScrewdriverIcon,
-  StarIcon,
   TvIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline";
-
-type Product = {
-  id: number;
-  title: string;
-  location: string;
-  price: number;
-  rating: number;
-  reviews: number;
-  image: string;
-  isRented: boolean;
-  category: string;
-  createdAt: string;
-};
+import ProductCard from "@/components/ProductCard";
+import { Product } from "@/types/product";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -51,51 +36,83 @@ export default function ProductsPage() {
   const dummy: Product[] = [
     {
       id: 1,
-      title: "캠핑용 의자 세트",
-      location: "성북구",
-      price: 15000,
-      rating: 4.9,
-      reviews: 12,
+      title: "새상품",
+      description: "설명어쩌고 상품설명",
+      price: 37000,
+      location: "성북동",
       image: "/images/공구.jpg",
       isRented: false,
-      category: "레저/취미",
-      createdAt: "2025-10-18",
+      rating: 4.85,
+      reviews: 26,
+      createdAt: "2025-10-20",
+      category: "수리/공구/인테리어",
+      seller: {
+        email: "yujin@gmail.com",
+        name: "정유진",
+        nickname: "별명",
+        accessToken: "",
+        refreshToken: "",
+      },
     },
     {
       id: 2,
-      title: "전동 드릴 세트",
-      location: "성북구",
-      price: 8000,
-      rating: 4.8,
-      reviews: 20,
+      title: "새상품",
+      description: "설명어쩌고 상품설명",
+      price: 3700400,
+      location: "성북동",
       image: "/images/공구.jpg",
       isRented: true,
+      rating: 4.85,
+      reviews: 26,
+      createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
-      createdAt: "2025-10-16",
+      seller: {
+        email: "yujin@gmail.com",
+        name: "정유진",
+        nickname: "별명",
+        accessToken: "",
+        refreshToken: "",
+      },
     },
     {
       id: 3,
-      title: "프로젝터 대여합니다",
-      location: "마포구 연남동",
-      price: 30000,
-      rating: 5.0,
-      reviews: 9,
+      title: "새상품",
+      description: "설명어쩌고 상품설명",
+      price: 23000,
+      location: "성북동",
       image: "/images/공구.jpg",
       isRented: false,
-      category: "전자기기",
-      createdAt: "2025-10-15",
+      rating: 4.85,
+      reviews: 26,
+      createdAt: "2025-10-20",
+      category: "수리/공구/인테리어",
+      seller: {
+        email: "yujin@gmail.com",
+        name: "정유진",
+        nickname: "별명",
+        accessToken: "",
+        refreshToken: "",
+      },
     },
     {
       id: 4,
-      title: "프로젝터 대여합니다",
-      location: "마포구 연남동",
-      price: 10000,
-      rating: 4.7,
-      reviews: 18,
+      title: "새상품",
+      description: "설명어쩌고 상품설명",
+      price: 37200,
+      location: "성북동",
       image: "/images/공구.jpg",
       isRented: true,
-      category: "전자기기",
-      createdAt: "2025-10-12",
+      rating: 4.85,
+      reviews: 26,
+      createdAt: "2025-10-20",
+      category: "수리/공구/인테리어",
+      seller: {
+        email: "yujin@gmail.com",
+        name: "정유진",
+        nickname: "별명",
+        accessToken: "",
+        refreshToken: "",
+      },
     },
   ];
 
@@ -224,56 +241,7 @@ export default function ProductsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {filterProducts.map((product) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.id}`}
-              className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-md transition-shadow relative"
-            >
-              <div className="relative h-44">
-                <Image
-                  src={product.image}
-                  alt={product.title}
-                  fill
-                  className={`object-cover transition ${
-                    product.isRented ? "opacity-60" : "opacity-100"
-                  }`}
-                />
-                {/* 대여중일때 */}
-                {product.isRented && (
-                  <div className="absolute top-3 left-3 bg-primary-purple text-white px-3 py-1 text-xs rounded-md">
-                    대여중
-                  </div>
-                )}
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold text-[var(--color-text-primary)] mb-2 line-clamp-2">
-                  {product.title}
-                </h3>
-
-                <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2">
-                  <MapPinIcon className="w-4 h-4 mr-1" />
-                  {product.location}
-                </div>
-
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium ml-1">{product.rating}</span>
-                    <span className="text-sm text-[var(--color-text-secondary)] ml-1">
-                      ({product.reviews})
-                    </span>
-                  </div>
-                  <span className="text-[var(--color-primary)] font-bold">
-                    {product.price.toLocaleString()}원
-                  </span>
-                </div>
-
-                <div className="text-xs text-gray-400 ml-1">
-                  {new Date(product.createdAt).toLocaleDateString("ko-KR")}
-                </div>
-              </div>
-            </Link>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}
