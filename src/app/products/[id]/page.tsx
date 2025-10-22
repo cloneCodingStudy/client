@@ -7,15 +7,18 @@ import { MapPinIcon, StarIcon } from "@heroicons/react/24/outline";
 import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import { Review } from "@/types/review";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   //dummy
   useEffect(() => {
+    if (!id) return;
     const dummy: Product = {
       id: 1,
       title: "새상품",
@@ -100,9 +103,35 @@ export default function ProductDetailPage() {
         },
       },
     ];
+
+    const dummy3: Review[] = [
+      {
+        id: 1,
+        writer: "정유진",
+        rating: 2,
+        comment: "상품 상태가 너무 좋아요!",
+        createdAt: "2025-10-20",
+      },
+      {
+        id: 2,
+        writer: "정유진",
+        rating: 5,
+        comment: "상품 상태가 너무 좋아요!",
+        createdAt: "2025-10-20",
+      },
+      {
+        id: 3,
+        writer: "정유진",
+        rating: 4,
+        comment: "상품 상태가 너무 좋아요!",
+        createdAt: "2025-10-20",
+      },
+    ];
+
     setProduct(dummy);
     setSellerProducts(dummy2);
     setPopularProducts(dummy2);
+    setReviews(dummy3);
   }, [id]);
 
   //로딩페이지
@@ -180,8 +209,42 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
+      {/* 리뷰  */}
+      <section className="mb-12">
+        <h3 className="text-lg font-semibold mb-4">리뷰 {reviews.length}건</h3>
+
+        {reviews.length > 0 ? (
+          <ul className="space-y-6">
+            {reviews.map((review) => (
+              <li key={review.id} className="border-b border-gray-100 pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-semibold">{review.writer}</span>
+                  <div className="flex items-center">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <StarIcon
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <span className="text-xs text-gray-400 ml-2">
+                    {new Date(review.createdAt).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+                <p className="text-gray-700 text-sm">{review.comment}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400 text-sm">아직 등록된 리뷰가 없습니다.</p>
+        )}
+      </section>
+
       {/* 상품 더보기 */}
-      <div className="border-b border-[var(--color-border)] mb-8 pb-8">
+      <section className="border-b border-[var(--color-border)] mb-8 pb-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base md:text-lg font-semibold">
             {product.seller.nickname} 님의 대여상품
@@ -199,21 +262,26 @@ export default function ProductDetailPage() {
         ) : (
           <p className="text-gray-400 text-sm">판매자의 다른 상품이 없습니다.</p>
         )}
-      </div>
+      </section>
 
       {/* 카테고리 인기 매물 */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold">{product.category} 인기매물</h3>
-        <Link href="/products" className="text-primary-purple text-sm font-medium hover:underline">
-          더보기 &gt;
-        </Link>
-      </div>
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold">{product.category} 인기매물</h3>
+          <Link
+            href="/products"
+            className="text-primary-purple text-sm font-medium hover:underline"
+          >
+            더보기 &gt;
+          </Link>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-        {popularProducts.map((item) => (
-          <ProductCard key={item.id} product={item} />
-        ))}
-      </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+          {popularProducts.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
