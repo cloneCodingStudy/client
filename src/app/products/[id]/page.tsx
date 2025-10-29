@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/outline";
 import { Product } from "@/types/product";
@@ -15,6 +15,7 @@ export default function ProductDetailPage() {
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const router = useRouter();
 
   //dummy
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function ProductDetailPage() {
       createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
       seller: {
+        id: 1,
         email: "yujin@gmail.com",
         name: "정유진",
         nickname: "별명",
@@ -55,6 +57,7 @@ export default function ProductDetailPage() {
         createdAt: "2025-10-20",
         category: "수리/공구/인테리어",
         seller: {
+          id: 2,
           email: "yujin@gmail.com",
           name: "정유진",
           nickname: "별명",
@@ -75,6 +78,7 @@ export default function ProductDetailPage() {
         createdAt: "2025-10-20",
         category: "수리/공구/인테리어",
         seller: {
+          id: 3,
           email: "yujin@gmail.com",
           name: "정유진",
           nickname: "별명",
@@ -95,6 +99,7 @@ export default function ProductDetailPage() {
         createdAt: "2025-10-20",
         category: "수리/공구/인테리어",
         seller: {
+          id: 4,
           email: "yujin@gmail.com",
           name: "정유진",
           nickname: "별명",
@@ -179,12 +184,17 @@ export default function ProductDetailPage() {
             등록일 {new Date(product.createdAt).toLocaleDateString("ko-KR")}
           </div>
 
+          {/* 버튼 */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-            <button className="cursor-pointer flex-1 sm:max-w-[200px] bg-gray-100 border border-[var(--color-border)] text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">
+            <button
+              onClick={() => router.push(`/chat/${product.seller.id}`)}
+              className="cursor-pointer flex-1 sm:max-w-[200px] bg-gray-100 border border-[var(--color-border)] text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
+            >
               1:1 채팅하기
             </button>
             <button
               disabled={product.isRented}
+              onClick={() => router.push(`/rent/${product.id}`)}
               className={`flex-1 sm:max-w-[200px] py-3 rounded-lg font-semibold transition ${
                 product.isRented
                   ? "bg-gray-500 text-white cursor-not-allowed"

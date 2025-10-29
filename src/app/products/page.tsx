@@ -47,6 +47,7 @@ export default function ProductsPage() {
       createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
       seller: {
+        id: 1,
         email: "yujin@gmail.com",
         name: "정유진",
         nickname: "별명",
@@ -67,6 +68,7 @@ export default function ProductsPage() {
       createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
       seller: {
+        id: 2,
         email: "yujin@gmail.com",
         name: "정유진",
         nickname: "별명",
@@ -87,6 +89,7 @@ export default function ProductsPage() {
       createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
       seller: {
+        id: 3,
         email: "yujin@gmail.com",
         name: "정유진",
         nickname: "별명",
@@ -107,6 +110,7 @@ export default function ProductsPage() {
       createdAt: "2025-10-20",
       category: "수리/공구/인테리어",
       seller: {
+        id: 4,
         email: "yujin@gmail.com",
         name: "정유진",
         nickname: "별명",

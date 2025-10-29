@@ -5,10 +5,12 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import useUserStore from "@/store/useUserStore";
 
 export default function LoginForm() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
+  const { setUser } = useUserStore();
 
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
@@ -30,11 +32,14 @@ export default function LoginForm() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         //엑세스 토큰 가져오기
         const accessToken = res.headers.get("access");
+        const user = data?.user;
 
-        if (accessToken) {
+        if (accessToken && user) {
           localStorage.setItem("accessToken", accessToken);
+          setUser(user); //전역 유저 상태 갱신
 
           toast.success("로그인에 성공했습니다.");
           router.push("/"); // 메인으로 이동
