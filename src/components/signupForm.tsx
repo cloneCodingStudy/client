@@ -83,6 +83,7 @@ export default function SignupForm() {
 
       if (res.ok) {
         const newUser: User = {
+          id: result.id,
           email: result.email,
           name: result.name,
           nickname: result.nickname,
