@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MapPinIcon, StarIcon } from "@heroicons/react/24/outline";
-import { Product } from "@/types/product";
+import { ProductListItem } from "@/types/product";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductListItem;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
@@ -15,10 +15,9 @@ export default function ProductCard({ product }: ProductCardProps) {
       href={`/products/${product.id}`}
       className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-md transition-shadow relative"
     >
-      {/* 상품 이미지 */}
       <div className="relative h-44">
         <Image
-          src={product.image}
+          src={"/images/공구.jpg"}
           alt={product.title}
           fill
           className={`object-cover transition ${product.isRented ? "opacity-60" : "opacity-100"}`}
@@ -38,16 +37,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2">
           <MapPinIcon className="w-4 h-4 mr-1" />
-          {product.location}
+          {"성북구"}
         </div>
 
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="text-sm font-medium ml-1">{product.rating}</span>
-            <span className="text-sm text-[var(--color-text-secondary)] ml-1">
-              ({product.reviews})
-            </span>
+            <span className="text-sm font-medium ml-1">{4.8}</span>
+            <span className="text-sm text-[var(--color-text-secondary)] ml-1">({12})</span>
           </div>
           <span className="text-[var(--color-primary)] font-bold">
             {product.price.toLocaleString()}원

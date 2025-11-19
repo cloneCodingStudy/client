@@ -11,10 +11,12 @@ import {
   TvIcon,
 } from "@heroicons/react/24/outline";
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/types/product";
+import { ProductListItem } from "@/types/product";
+import Link from "next/link";
+import { getProducts } from "@/data/actions/products.api";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductListItem[]>([]);
   const [sort, setSort] = useState("latest");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,105 +35,111 @@ export default function ProductsPage() {
   ];
 
   //더미
-  const dummy: Product[] = [
-    {
-      id: 1,
-      title: "새상품",
-      description: "설명어쩌고 상품설명",
-      price: 37000,
-      location: "성북동",
-      image: "/images/공구.jpg",
-      isRented: false,
-      rating: 4.85,
-      reviews: 26,
-      createdAt: "2025-10-20",
-      category: "수리/공구/인테리어",
-      seller: {
-        id: 1,
-        email: "yujin@gmail.com",
-        name: "정유진",
-        nickname: "별명",
-        accessToken: "",
-        refreshToken: "",
-      },
-    },
-    {
-      id: 2,
-      title: "새상품",
-      description: "설명어쩌고 상품설명",
-      price: 3700400,
-      location: "성북동",
-      image: "/images/공구.jpg",
-      isRented: true,
-      rating: 4.85,
-      reviews: 26,
-      createdAt: "2025-10-20",
-      category: "수리/공구/인테리어",
-      seller: {
-        id: 2,
-        email: "yujin@gmail.com",
-        name: "정유진",
-        nickname: "별명",
-        accessToken: "",
-        refreshToken: "",
-      },
-    },
-    {
-      id: 3,
-      title: "새상품",
-      description: "설명어쩌고 상품설명",
-      price: 23000,
-      location: "성북동",
-      image: "/images/공구.jpg",
-      isRented: false,
-      rating: 4.85,
-      reviews: 26,
-      createdAt: "2025-10-20",
-      category: "수리/공구/인테리어",
-      seller: {
-        id: 3,
-        email: "yujin@gmail.com",
-        name: "정유진",
-        nickname: "별명",
-        accessToken: "",
-        refreshToken: "",
-      },
-    },
-    {
-      id: 4,
-      title: "새상품",
-      description: "설명어쩌고 상품설명",
-      price: 37200,
-      location: "성북동",
-      image: "/images/공구.jpg",
-      isRented: true,
-      rating: 4.85,
-      reviews: 26,
-      createdAt: "2025-10-20",
-      category: "수리/공구/인테리어",
-      seller: {
-        id: 4,
-        email: "yujin@gmail.com",
-        name: "정유진",
-        nickname: "별명",
-        accessToken: "",
-        refreshToken: "",
-      },
-    },
-  ];
+  // const dummy: Product[] = [
+  //   {
+  //     id: 1,
+  //     title: "새상품",
+  //     description: "설명어쩌고 상품설명",
+  //     price: 37000,
+  //     location: "성북동",
+  //     image: "/images/공구.jpg",
+  //     isRented: false,
+  //     rating: 4.85,
+  //     reviews: 26,
+  //     createdAt: "2025-10-20",
+  //     category: "수리/공구/인테리어",
+  //     seller: {
+  //       id: 1,
+  //       email: "yujin@gmail.com",
+  //       name: "정유진",
+  //       nickname: "별명",
+  //       accessToken: "",
+  //       refreshToken: "",
+  //     },
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "새상품",
+  //     description: "설명어쩌고 상품설명",
+  //     price: 3700400,
+  //     location: "성북동",
+  //     image: "/images/공구.jpg",
+  //     isRented: true,
+  //     rating: 4.85,
+  //     reviews: 26,
+  //     createdAt: "2025-10-20",
+  //     category: "수리/공구/인테리어",
+  //     seller: {
+  //       id: 2,
+  //       email: "yujin@gmail.com",
+  //       name: "정유진",
+  //       nickname: "별명",
+  //       accessToken: "",
+  //       refreshToken: "",
+  //     },
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "새상품",
+  //     description: "설명어쩌고 상품설명",
+  //     price: 23000,
+  //     location: "성북동",
+  //     image: "/images/공구.jpg",
+  //     isRented: false,
+  //     rating: 4.85,
+  //     reviews: 26,
+  //     createdAt: "2025-10-20",
+  //     category: "수리/공구/인테리어",
+  //     seller: {
+  //       id: 3,
+  //       email: "yujin@gmail.com",
+  //       name: "정유진",
+  //       nickname: "별명",
+  //       accessToken: "",
+  //       refreshToken: "",
+  //     },
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "새상품",
+  //     description: "설명어쩌고 상품설명",
+  //     price: 37200,
+  //     location: "성북동",
+  //     image: "/images/공구.jpg",
+  //     isRented: true,
+  //     rating: 4.85,
+  //     reviews: 26,
+  //     createdAt: "2025-10-20",
+  //     category: "수리/공구/인테리어",
+  //     seller: {
+  //       id: 4,
+  //       email: "yujin@gmail.com",
+  //       name: "정유진",
+  //       nickname: "별명",
+  //       accessToken: "",
+  //       refreshToken: "",
+  //     },
+  //   },
+  // ];
 
   //초기에 한번만 가져오기
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setProducts(dummy);
+    async function fetchData() {
+      setLoading(true);
+      const data = await getProducts(0, 20);
+      if (data && data.content) {
+        setProducts(data.content);
+      } else {
+        setProducts([]);
+      }
       setLoading(false);
-    }, 500);
+    }
+    fetchData();
   }, []);
 
   //검색
   const handleSearch = () => {
-    const filtered = dummy.filter((item) =>
+    const filtered = products.filter((item) =>
       item.title.toLowerCase().includes(searchKeyword.toLowerCase())
     );
     setProducts(filtered);
@@ -140,14 +148,14 @@ export default function ProductsPage() {
   //정렬
   const handleSort = (value: string) => {
     setSort(value);
-    let sorted = [...products];
+    const sorted = [...products];
 
     if (value === "price_low") sorted.sort((a, b) => a.price - b.price);
     else if (value === "price_high") sorted.sort((a, b) => b.price - a.price);
-    else if (value === "rating") sorted.sort((a, b) => b.rating - a.rating);
+    // else if (value === "rating") sorted.sort((a, b) => b.rating - a.rating);
     else if (value === "latest") {
       sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } else sorted = [...dummy];
+    }
 
     setProducts(sorted);
   };
@@ -155,8 +163,8 @@ export default function ProductsPage() {
   //필터
   const filterProducts = products.filter((p) => {
     const filterAvailable = available ? !p.isRented : true;
-    const filterCategory = activeCategory === "전체" ? true : p.category === activeCategory;
-    return filterAvailable && filterCategory;
+    // const filterCategory = activeCategory === "전체" ? true : p.category === activeCategory;
+    return filterAvailable;
   });
 
   return (
@@ -217,6 +225,14 @@ export default function ProductsPage() {
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-3">
         <label className="flex items-center gap-2 text-gray-700">
+          <div className="flex justify-end mb-6">
+            <Link
+              href="/products/new"
+              className="px-5 py-2 rounded-lg bg-primary-purple text-white font-medium hover:opacity-90 transition"
+            >
+              내 상품 올리기
+            </Link>
+          </div>
           <input
             type="checkbox"
             checked={available}

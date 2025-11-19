@@ -35,7 +35,7 @@ export default function Header() {
         </div>
 
         {/* 로그인/회원가입 버튼 */}
-        <div className="flex space-x-3">
+        <div className="flex space-x-4">
           {user ? ( //로그인 된 상태일때는 -> 로그아웃, 마이페이지
             <>
               <button

@@ -1,4 +1,8 @@
-import { User } from "@/types/user";
+export type SellerInfo = {
+  id: number;
+  nickname?: string;
+  email?: string;
+};
 
 export type Product = {
   id: number;
@@ -10,7 +14,16 @@ export type Product = {
   isRented: boolean;
   rating: number;
   reviews: number;
-  seller: User;
+  seller: SellerInfo;
   category: string;
   createdAt: string;
+};
+
+export type ProductListItem = {
+  id: number;
+  title: string;
+  price: number;
+  isRented: boolean;
+  createdAt: string;
+  seller: SellerInfo;
 };

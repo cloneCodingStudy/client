@@ -8,6 +8,7 @@ import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { Review } from "@/types/review";
+import { getProduct } from "@/data/actions/products.api";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -18,125 +19,142 @@ export default function ProductDetailPage() {
   const router = useRouter();
 
   //dummy
+  // useEffect(() => {
+  //   if (!id) return;
+  //   const dummy: Product = {
+  //     id: 1,
+  //     title: "새상품",
+  //     description: "설명어쩌고 상품설명",
+  //     price: 37000,
+  //     location: "성북동",
+  //     image: "/images/공구.jpg",
+  //     isRented: false,
+  //     rating: 4.85,
+  //     reviews: 26,
+  //     createdAt: "2025-10-20",
+  //     category: "수리/공구/인테리어",
+  //     seller: {
+  //       id: 1,
+  //       email: "yujin@gmail.com",
+  //       name: "정유진",
+  //       nickname: "별명",
+  //       accessToken: "",
+  //       refreshToken: "",
+  //     },
+  //   };
+
+  //   //판매자 다른 상품 더미
+  //   const dummy2: Product[] = [
+  //     {
+  //       id: 2,
+  //       title: "새상품",
+  //       description: "설명어쩌고 상품설명",
+  //       price: 30400,
+  //       location: "성북동",
+  //       image: "/images/공구.jpg",
+  //       isRented: false,
+  //       rating: 4.85,
+  //       reviews: 26,
+  //       createdAt: "2025-10-20",
+  //       category: "수리/공구/인테리어",
+  //       seller: {
+  //         id: 2,
+  //         email: "yujin@gmail.com",
+  //         name: "정유진",
+  //         nickname: "별명",
+  //         accessToken: "",
+  //         refreshToken: "",
+  //       },
+  //     },
+  //     {
+  //       id: 3,
+  //       title: "새상품",
+  //       description: "설명어쩌고 상품설명",
+  //       price: 2320,
+  //       location: "성북동",
+  //       image: "/images/공구.jpg",
+  //       isRented: true,
+  //       rating: 4.85,
+  //       reviews: 26,
+  //       createdAt: "2025-10-20",
+  //       category: "수리/공구/인테리어",
+  //       seller: {
+  //         id: 3,
+  //         email: "yujin@gmail.com",
+  //         name: "정유진",
+  //         nickname: "별명",
+  //         accessToken: "",
+  //         refreshToken: "",
+  //       },
+  //     },
+  //     {
+  //       id: 4,
+  //       title: "새상품",
+  //       description: "설명어쩌고 상품설명",
+  //       price: 3721,
+  //       location: "성북동",
+  //       image: "/images/공구.jpg",
+  //       isRented: false,
+  //       rating: 4.85,
+  //       reviews: 26,
+  //       createdAt: "2025-10-20",
+  //       category: "수리/공구/인테리어",
+  //       seller: {
+  //         id: 4,
+  //         email: "yujin@gmail.com",
+  //         name: "정유진",
+  //         nickname: "별명",
+  //         accessToken: "",
+  //         refreshToken: "",
+  //       },
+  //     },
+  //   ];
+
+  //   const dummy3: Review[] = [
+  //     {
+  //       id: 1,
+  //       writer: "정유진",
+  //       rating: 2,
+  //       comment: "상품 상태가 너무 좋아요!",
+  //       createdAt: "2025-10-20",
+  //     },
+  //     {
+  //       id: 2,
+  //       writer: "정유진",
+  //       rating: 5,
+  //       comment: "상품 상태가 너무 좋아요!",
+  //       createdAt: "2025-10-20",
+  //     },
+  //     {
+  //       id: 3,
+  //       writer: "정유진",
+  //       rating: 4,
+  //       comment: "상품 상태가 너무 좋아요!",
+  //       createdAt: "2025-10-20",
+  //     },
+  //   ];
+
+  //   setProduct(dummy);
+  //   setSellerProducts(dummy2);
+  //   setPopularProducts(dummy2);
+  //   setReviews(dummy3);
+  // }, [id]);
+
   useEffect(() => {
-    if (!id) return;
-    const dummy: Product = {
-      id: 1,
-      title: "새상품",
-      description: "설명어쩌고 상품설명",
-      price: 37000,
-      location: "성북동",
-      image: "/images/공구.jpg",
-      isRented: false,
-      rating: 4.85,
-      reviews: 26,
-      createdAt: "2025-10-20",
-      category: "수리/공구/인테리어",
-      seller: {
-        id: 1,
-        email: "yujin@gmail.com",
-        name: "정유진",
-        nickname: "별명",
-        accessToken: "",
-        refreshToken: "",
-      },
-    };
+    async function fetchData() {
+      if (!id) return;
 
-    //판매자 다른 상품 더미
-    const dummy2: Product[] = [
-      {
-        id: 2,
-        title: "새상품",
-        description: "설명어쩌고 상품설명",
-        price: 30400,
-        location: "성북동",
-        image: "/images/공구.jpg",
-        isRented: false,
-        rating: 4.85,
-        reviews: 26,
-        createdAt: "2025-10-20",
-        category: "수리/공구/인테리어",
-        seller: {
-          id: 2,
-          email: "yujin@gmail.com",
-          name: "정유진",
-          nickname: "별명",
-          accessToken: "",
-          refreshToken: "",
-        },
-      },
-      {
-        id: 3,
-        title: "새상품",
-        description: "설명어쩌고 상품설명",
-        price: 2320,
-        location: "성북동",
-        image: "/images/공구.jpg",
-        isRented: true,
-        rating: 4.85,
-        reviews: 26,
-        createdAt: "2025-10-20",
-        category: "수리/공구/인테리어",
-        seller: {
-          id: 3,
-          email: "yujin@gmail.com",
-          name: "정유진",
-          nickname: "별명",
-          accessToken: "",
-          refreshToken: "",
-        },
-      },
-      {
-        id: 4,
-        title: "새상품",
-        description: "설명어쩌고 상품설명",
-        price: 3721,
-        location: "성북동",
-        image: "/images/공구.jpg",
-        isRented: false,
-        rating: 4.85,
-        reviews: 26,
-        createdAt: "2025-10-20",
-        category: "수리/공구/인테리어",
-        seller: {
-          id: 4,
-          email: "yujin@gmail.com",
-          name: "정유진",
-          nickname: "별명",
-          accessToken: "",
-          refreshToken: "",
-        },
-      },
-    ];
+      const data = await getProduct(Number(id));
 
-    const dummy3: Review[] = [
-      {
-        id: 1,
-        writer: "정유진",
-        rating: 2,
-        comment: "상품 상태가 너무 좋아요!",
-        createdAt: "2025-10-20",
-      },
-      {
-        id: 2,
-        writer: "정유진",
-        rating: 5,
-        comment: "상품 상태가 너무 좋아요!",
-        createdAt: "2025-10-20",
-      },
-      {
-        id: 3,
-        writer: "정유진",
-        rating: 4,
-        comment: "상품 상태가 너무 좋아요!",
-        createdAt: "2025-10-20",
-      },
-    ];
+      if (!data) return;
+      setProduct(data);
 
-    setProduct(dummy);
-    setSellerProducts(dummy2);
-    setPopularProducts(dummy2);
-    setReviews(dummy3);
+      setSellerProducts([]);
+      setPopularProducts([]);
+      setReviews([]);
+    }
+
+    fetchData();
   }, [id]);
 
   //로딩페이지

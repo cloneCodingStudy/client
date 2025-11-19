@@ -3,6 +3,7 @@ import "./globals.css";
 import Footer from "@/components/_common/Footer";
 import { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "빌려요 Billioyo",
@@ -16,6 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        {/* PortOne 결제 스크립트 */}
+        <Script src="https://cdn.iamport.kr/v1/iamport.js" strategy="afterInteractive" />
+      </head>
       <body className="bg-[var(--color-background-main)] text-[var(--color-text-primary)] font-basic">
         <div className="flex min-h-screen flex-col">
           {/* 헤더 */}

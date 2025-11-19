@@ -1,4 +1,5 @@
 "use client";
+import ImageUpload from "@/components/ImageUpload";
 import { createCommunityPost } from "@/data/actions/community.api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -10,6 +11,7 @@ export default function CommunityPostWirte() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const max = 60;
 
@@ -102,12 +104,8 @@ export default function CommunityPostWirte() {
           />
         </div>
 
-        {/* 사진*/}
-        <div className="flex items-center gap-2 text-gray-600 text-sm">
-          <span className="cursor-pointer flex items-center gap-1 hover:text-[var(--color-primary)]">
-            사진 첨부하기
-          </span>
-        </div>
+        {/* 사진 업로드 */}
+        <ImageUpload imageUrls={imageUrls} setImageUrls={setImageUrls} />
 
         {/* 작성 버튼 */}
         <div className="flex justify-end mt-8">

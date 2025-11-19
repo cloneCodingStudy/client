@@ -35,14 +35,14 @@ export default function LoginForm() {
         const data = await res.json();
         //엑세스 토큰 가져오기
         const accessToken = res.headers.get("access");
-        const user = data?.user;
+        const user = data;
 
         if (accessToken && user) {
           localStorage.setItem("accessToken", accessToken);
           setUser(user); //전역 유저 상태 갱신
 
           toast.success("로그인에 성공했습니다.");
-          router.push("/"); // 메인으로 이동
+          router.push("/"); // 메인으로 이동s
         } else {
           toast.error("로그인 정보를 받아오지 못했습니다.");
         }
