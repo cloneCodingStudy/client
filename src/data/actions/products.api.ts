@@ -66,7 +66,7 @@ export async function getProducts(page: number = 0, size: number = 20) {
       description: data.description,
       price: data.price,
       location: data.location,
-      image: data.imageUrl ?? "/images/placeholder.jpg",
+      image: data.imageUrls?.[0] ?? data.imageUrl ?? "/images/공구.jpg",
       isRented: data.status,
       rating: 0,
       reviews: 0,

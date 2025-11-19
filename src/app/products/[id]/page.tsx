@@ -166,7 +166,7 @@ export default function ProductDetailPage() {
         {/* 상품 이미지 */}
         <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[var(--color-border)] ">
           <Image
-            src={product.image}
+            src={product.image || "/images/공구.jpg"}
             alt={product.title}
             fill
             className={`object-cover transition ${product.isRented ? "opacity-60" : "opacity-100"}`}
