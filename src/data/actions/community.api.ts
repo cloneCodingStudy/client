@@ -142,23 +142,37 @@ export async function searchCommunityPosts(keyword: string): Promise<CommunityPo
   }
 }
 
-/**
- * presigned URL 요청
- */
-
-export async function getPresignedUrls(fileNames: string[]) {
+export async function getPresignedUrls(fileNames: string[]): Promise<string[] | null> {
   try {
     const res = await fetch(`${API_URL}/community/presigned-url`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileNames }),
+      body: JSON.stringify({ fileNames }), 
     });
 
-    if (!res.ok) throw new Error("실패");
-    return await res.json();
+    if (!res.ok) throw new Error("URL 생성 실패");
+    return await res.json(); 
   } catch (err) {
     console.error("[getPresignedUrls]", err);
     return null;
+  }
+}
+
+export async function uploadFileToS3(presignedUrl: string, file: File) {
+  try {
+    const res = await fetch(presignedUrl, {
+      method: "PUT", 
+      body: file,    
+      headers: {
+        "Content-Type": file.type, 
+      },
+    });
+
+    if (!res.ok) throw new Error("S3 업로드 실패");
+    return true;
+  } catch (err) {
+    console.error("[uploadFileToS3]", err);
+    return false;
   }
 }
 
