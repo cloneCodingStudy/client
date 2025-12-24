@@ -1,29 +1,58 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useLocationStore from "@/store/useLocationStore";
 import { useLocation } from "@/hooks/useLocation";
 
 export default function LocationSection() {
   const { location, setLocation } = useLocationStore();
-  const { address, searchAddress, getAddressFromCoords } = useLocation();
+  const { getAddressFromCoords, searchAddress } = useLocation();
+  const [isScriptReady, setIsScriptReady] = useState(false);
 
+  // 1. 네이버 스크립트 로드 여부 체크 (타이밍 문제 해결)
   useEffect(() => {
-    if (address) {
-      setLocation({ ...location, neighborhood: address });
+    if (window.naver && window.naver.maps) {
+      setIsScriptReady(true);
+    } else {
+      // 로드가 안 됐다면 0.1초마다 체크 (간단한 해결책)
+      const interval = setInterval(() => {
+        if (window.naver && window.naver.maps) {
+          setIsScriptReady(true);
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
     }
-  }, [address, setLocation]);
+  }, []);
 
+  // 2. 자동 위치 설정 (스크립트가 준비되었을 때만 실행)
   useEffect(() => {
-    if (!location?.neighborhood) {
+    if (!location?.neighborhood && isScriptReady) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          await getAddressFromCoords(pos.coords.latitude, pos.coords.longitude);
+          const dong = await getAddressFromCoords(
+            pos.coords.latitude,
+            pos.coords.longitude
+          );
+          if (dong) {
+            setLocation({ ...location, neighborhood: dong });
+          }
         },
-        () => console.warn("위치 권한 거부됨")
+        (err) => console.warn("위치 권한 거부됨", err)
       );
     }
-  }, [location, getAddressFromCoords]);
+  }, [isScriptReady, location?.neighborhood]); 
+
+  // 3. 수동 주소 검색 핸들러
+  const handleSearch = async () => {
+    const result = await searchAddress(); 
+    if (result) {
+        setLocation({ 
+            ...location, 
+            neighborhood: result.dong, 
+        });
+    }
+  };
 
   return (
     <section className="text-center py-12 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl">
