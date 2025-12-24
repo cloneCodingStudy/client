@@ -18,6 +18,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
+        <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" />
+        <Script
+          src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
+          strategy="beforeInteractive"
+        />
         {/* PortOne 결제 스크립트 */}
         <Script src="https://cdn.iamport.kr/v1/iamport.js" strategy="afterInteractive" />
       </head>

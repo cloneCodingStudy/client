@@ -22,22 +22,14 @@ export async function getProducts(page: number = 0, size: number = 20) {
         price: number;
         status: boolean;
         registerTime: string;
-        user: {
-          id: number;
-          nickname?: string;
-          email?: string;
-        };
+        nickname: string;
       }) => ({
         id: item.id,
         title: item.title,
         price: item.price,
         isRented: item.status,
         createdAt: item.registerTime,
-        seller: {
-          id: item.user.id,
-          nickname: item.user.nickname,
-          email: item.user.email,
-        },
+        seller: item.nickname,
       })
     );
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { createProduct } from "@/data/actions/products.api";
 import ImageUpload from "@/components/ImageUpload";
+import NaverMap from "@/components/naverMap";
 
 export default function ProductNewPage() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function ProductNewPage() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [location, setLocation] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [description, setDescription] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
 
@@ -27,13 +29,18 @@ export default function ProductNewPage() {
     { label: "수리/공구/인테리어", value: "TOOL" },
   ];
 
+  const handleLocationSelect = (address: string, lat: number, lng: number) => {
+    setLocation(address);
+    setCoords({ lat, lng });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!category) return toast.error("카테고리를 선택해주세요.");
     if (!title.trim()) return toast.error("상품명을 입력해주세요.");
     if (!price.trim()) return toast.error("가격을 입력해주세요.");
-    if (!location.trim()) return toast.error("위치를 입력해주세요.");
+    if (!location) return toast.error("지도에서 거래 장소를 클릭해주세요.");
     if (!description.trim()) return toast.error("설명을 입력해주세요.");
 
     const payload = {
@@ -41,6 +48,8 @@ export default function ProductNewPage() {
       category,
       price: Number(price),
       location,
+      latitude: coords?.lat,
+      longitude: coords?.lng,
       description,
       imageUrls,
     };
@@ -98,6 +107,21 @@ export default function ProductNewPage() {
             onChange={(e) => setPrice(e.target.value)}
             className="w-full text-lg focus:outline-none bg-transparent"
           />
+        </div>
+
+        <div className="space-y-3 py-4">
+          <label className="text-sm font-bold text-gray-700">거래 희망 장소 설정</label>
+          <NaverMap onLocationSelect={handleLocationSelect} />
+          <div className="flex items-center gap-2 border-b border-gray-300 py-3">
+            <span className="text-gray-500">📍</span>
+            <input
+              type="text"
+              placeholder="지도에서 위치를 선택해주세요."
+              value={location}
+              readOnly
+              className="w-full text-lg focus:outline-none bg-transparent text-[var(--color-primary-purple)] font-medium"
+            />
+          </div>
         </div>
 
         {/* 위치 */}
