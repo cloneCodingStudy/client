@@ -8,7 +8,7 @@ export interface CommunityPost {
   likeCount: number;
   commentCount: number;
   category: CommunityCategory;
-  user: CommunityUser[];
+  username: string;
   images?: CommunityImage[];
   comments?: CommunityComment[];
 }
