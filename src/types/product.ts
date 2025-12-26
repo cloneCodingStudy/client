@@ -9,7 +9,9 @@ export type Product = {
   title: string;
   description: string;
   price: number;
-  location: string;
+  location: string;        
+  latitude?: number;       
+  longitude?: number;     
   image: string;
   isRented: boolean;
   rating: number;

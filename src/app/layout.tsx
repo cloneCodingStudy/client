@@ -19,8 +19,9 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" />
+        {/* Google Maps 스크립트로 변경 */}
         <Script
-          src={`https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=ko&region=KR`}
           strategy="beforeInteractive"
         />
         {/* PortOne 결제 스크립트 */}
@@ -43,13 +44,13 @@ export default function RootLayout({
               },
               success: {
                 iconTheme: {
-                  primary: "#10b981", // 초록색
+                  primary: "#10b981",
                   secondary: "#fff",
                 },
               },
               error: {
                 iconTheme: {
-                  primary: "#ef4444", // 빨간색
+                  primary: "#ef4444",
                   secondary: "#fff",
                 },
               },
