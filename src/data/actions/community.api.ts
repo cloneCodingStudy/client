@@ -3,20 +3,31 @@ import { CommunityPost } from "@/types/community";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
- * 커뮤니티 게시글 목록 조회
+ * 커뮤니티 게시글 목록 조회 (위치 기반 필터링 포함)
  */
-export async function getCommunityPosts(): Promise<CommunityPost[] | null> {
+export async function getCommunityPosts(
+  page: number = 0,
+  size: number = 20,
+  position?: { lat: number; lng: number; distance: number }
+): Promise<{ content: CommunityPost[], totalPages: number, totalElements: number } | null> { 
   try {
-    const res = await fetch(`${API_URL}/community/posts`, {
-      method: "GET",
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
     });
 
-    if (!res.ok) throw new Error("게시글 목록을 불러오지 못했습니다.");
+    if (position) {
+      params.append("lat", position.lat.toString());
+      params.append("lng", position.lng.toString());
+      params.append("distance", position.distance.toString());
+    }
 
-    const data = await res.json();
-    return data.content;
+    const res = await fetch(`${API_URL}/community/posts?${params.toString()}`);
+    if (!res.ok) throw new Error("게시글 목록 로드 실패");
+
+    return await res.json(); 
   } catch (err) {
-    console.error("[getCommunityPosts]", err);
+    console.error(err);
     return null;
   }
 }
@@ -47,6 +58,9 @@ export async function createCommunityPost(data: {
   title: string;
   content: string;
   category: string;
+  location?: string; 
+  lat?: number;      
+  lng?: number;      
   imageUrls?: string[];
 }): Promise<CommunityPost | null> {
   try {
@@ -57,7 +71,7 @@ export async function createCommunityPost(data: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data), 
     });
 
     if (!res.ok) throw new Error("게시글 작성에 실패했습니다.");

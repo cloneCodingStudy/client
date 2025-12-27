@@ -4,9 +4,11 @@ import { createCommunityPost } from "@/data/actions/community.api";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import useLocationStore from "@/store/useLocationStore"; // 위치 스토어 추가
 
-export default function CommunityPostWirte() {
+export default function CommunityPostWrite() {
   const router = useRouter();
+  const { location } = useLocationStore(); // 현재 위치 정보 가져오기
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -18,6 +20,7 @@ export default function CommunityPostWirte() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 유효성 검사
     if (!category) {
       toast.error("게시판을 선택해주세요.");
       return;
@@ -36,7 +39,10 @@ export default function CommunityPostWirte() {
         title,
         content,
         category,
-        imageUrls: [],
+        imageUrls, 
+        location: location?.neighborhood || "알 수 없는 동네", 
+        lat: location?.lat, 
+        lng: location?.lng, 
       });
 
       if (res) {
@@ -53,10 +59,13 @@ export default function CommunityPostWirte() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
-      {/* 가이드라인 문구 */}
-      <div className="text-sm text-gray-600 p-4 rounded-lg mb-8">
-        ⚠️ 건전한 커뮤니티 환경을 위해 일부 글은 운영 정책에 따라 노출이 제한되거나 삭제될 수
-        있습니다.
+      {/* 현재 위치 표시 (선택 사항) */}
+      <div className="text-xs text-purple-600 font-semibold mb-2 px-1">
+        📍 현재 위치: {location?.neighborhood || "위치 정보 없음"}
+      </div>
+      
+      <div className="text-sm text-gray-600 p-4 bg-gray-50 rounded-lg mb-8">
+        ⚠️ 건전한 커뮤니티 환경을 위해 일부 글은 운영 정책에 따라 노출이 제한되거나 삭제될 수 있습니다.
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -65,7 +74,7 @@ export default function CommunityPostWirte() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border rounded-lg px-4 py-2 text-sm w-1/2 focus:ring-[var(--color-primary)] focus:outline-none"
+            className="border rounded-lg px-4 py-2 text-sm w-1/2 focus:ring-purple-500 focus:outline-none"
           >
             <option value="" disabled hidden>
               게시판을 선택해주세요 (필수)
@@ -100,7 +109,7 @@ export default function CommunityPostWirte() {
             onChange={(e) => setContent(e.target.value)}
             placeholder="내용을 입력해주세요."
             rows={12}
-            className="resize-none w-full  rounded-lg p-4 text-sm  focus:outline-none "
+            className="resize-none w-full rounded-lg p-4 text-sm focus:outline-none bg-gray-50/30"
           />
         </div>
 
@@ -111,7 +120,7 @@ export default function CommunityPostWirte() {
         <div className="flex justify-end mt-8">
           <button
             type="submit"
-            className="cursor-pointer px-6 py-2 bg-[var(--color-primary-purple)] text-white rounded-lg hover:bg-[var(--color-hover-purple)] transition font-semibold"
+            className="cursor-pointer px-10 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-bold shadow-lg shadow-purple-100"
           >
             글 올리기
           </button>

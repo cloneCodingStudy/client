@@ -1,7 +1,8 @@
 export type SellerInfo = {
-  id: number;
-  nickname?: string;
-  email?: string;
+  id: number;       
+  email: string;    
+  nickname: string; 
+  name?: string;    
 };
 
 export type Product = {

@@ -4,7 +4,7 @@ export interface UserLocation {
   city?: string;
   district?: string;
   lat?: number;
-  lon?: number;
+  lng?: number;
 }
 
 export interface LocationState {

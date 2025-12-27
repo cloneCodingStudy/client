@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import useUserStore from "@/store/useUserStore";
 
 export default function LoginForm() {
@@ -15,6 +15,8 @@ export default function LoginForm() {
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/";
 
   //로그인
   const onSubmit = async (e: React.FormEvent) => {
@@ -42,7 +44,7 @@ export default function LoginForm() {
           setUser(user); //전역 유저 상태 갱신
 
           toast.success("로그인에 성공했습니다.");
-          router.push("/"); // 메인으로 이동s
+          router.push(decodeURIComponent(returnUrl));
         } else {
           toast.error("로그인 정보를 받아오지 못했습니다.");
         }

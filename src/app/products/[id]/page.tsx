@@ -1,217 +1,165 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { MapPinIcon, StarIcon, FlagIcon } from "@heroicons/react/24/outline";
+import { getProduct, deleteProduct } from "@/data/actions/products.api";
 import { Product } from "@/types/product";
-import ProductCard from "@/components/ProductCard";
-import Link from "next/link";
-import { Review } from "@/types/review";
-import { getProduct } from "@/data/actions/products.api";
-import ReportModal from "@/components/reportModal";
+import { 
+  MapPinIcon, 
+  ChevronLeftIcon, 
+  ShareIcon, 
+  EllipsisHorizontalIcon 
+} from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
+import StaticGoogleMap from "@/components/staticGoogleMap"; 
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
-  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [showReportModal, setShowReportModal] = useState(false);
   const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // 1. 데이터 불러오기
   useEffect(() => {
-    async function fetchData() {
+    async function fetchDetail() {
       if (!id) return;
-
+      setLoading(true);
       const data = await getProduct(Number(id));
-
-      if (!data) return;
-      setProduct(data);
-
-      setSellerProducts([]);
-      setPopularProducts([]);
-      setReviews([]);
+      if (data) {
+        setProduct(data);
+      } else {
+        toast.error("상품 정보를 찾을 수 없습니다.");
+        router.push("/products");
+      }
+      setLoading(false);
     }
+    fetchDetail();
+  }, [id, router]);
 
-    fetchData();
-  }, [id]);
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+    </div>
+  );
 
-  if (!product) return <p className="text-center mt-10">상품을 불러오는 중...</p>;
+  if (!product) return null;
 
   return (
-    <>
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
-          {/* 상품 이미지 */}
-          <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-[var(--color-border)] ">
-            <Image
-              src={product.image || "/images/공구.jpg"}
-              alt={product.title}
-              fill
-              className={`object-cover transition ${product.isRented ? "opacity-60" : "opacity-100"}`}
-            />
-            {product.isRented && (
-              <div className="absolute top-3 left-3 bg-primary-purple text-white text-sm px-3 py-1 rounded-md">
-                대여중
-              </div>
-            )}
-          </div>
-
-          {/* 상품 정보 */}
-          <div>
-            <div className="flex items-start justify-between mb-2">
-              <h1 className="text-2xl font-bold flex-1">{product.title}</h1>
-              {/* 신고하기 버튼 */}
-              <button
-                onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors text-sm"
-                title="신고하기"
-              >
-                <FlagIcon className="w-5 h-5" />
-                <span>신고</span>
-              </button>
-            </div>
-
-            <p className="text-gray-500 mb-6">{product.description}</p>
-
-            <div className="text-3xl font-bold text-[var(--color-primary)] mb-3">
-              {product.price.toLocaleString()}원
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
-              <MapPinIcon className="w-5 h-5" />
-              {product.location}
-            </div>
-
-            <div className="flex items-center gap-1 mb-6">
-              <StarIcon className="w-5 h-5 text-yellow-500 fill-current " />
-              <span className="font-medium">{product.rating}</span>
-              <span className="text-gray-500 text-sm">({product.reviews})</span>
-            </div>
-
-            <div className="text-sm text-gray-400">
-              등록일 {new Date(product.createdAt).toLocaleDateString("ko-KR")}
-            </div>
-
-            {/* 버튼 */}
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-              <button
-                onClick={() => router.push(`/chat/${product.seller.id}`)}
-                className="cursor-pointer flex-1 sm:max-w-[200px] bg-gray-100 border border-[var(--color-border)] text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
-              >
-                1:1 채팅하기
-              </button>
-              <button
-                disabled={product.isRented}
-                onClick={() => router.push(`/rent/${product.id}`)}
-                className={`flex-1 sm:max-w-[200px] py-3 rounded-lg font-semibold transition ${
-                  product.isRented
-                    ? "bg-gray-500 text-white cursor-not-allowed"
-                    : "bg-primary-purple cursor-pointer text-white hover:bg-primary-purple-alt"
-                }`}
-              >
-                {product.isRented ? "대여중" : "바로 빌려요"}
-              </button>
-            </div>
-          </div>
+    <div className="max-w-2xl mx-auto pb-24 bg-white">
+      {/* 상단 네비게이션 바 */}
+      <div className="flex items-center justify-between p-4 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+        <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition">
+          <ChevronLeftIcon className="w-6 h-6" />
+        </button>
+        <div className="flex gap-2">
+          <button className="p-2 hover:bg-gray-100 rounded-full transition"><ShareIcon className="w-6 h-6" /></button>
+          <button className="p-2 hover:bg-gray-100 rounded-full transition"><EllipsisHorizontalIcon className="w-6 h-6" /></button>
         </div>
-
-        <div className="border-b border-[var(--color-border)]  mb-8 pb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center  ">
-              프로필
-            </div>
-            <div>
-              <p className="font-medium">{product.seller.nickname}</p>
-              <p className="text-sm text-gray-500">{product.seller.email}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 리뷰  */}
-        <section className="mb-12">
-          <h3 className="text-lg font-semibold mb-4">리뷰 {reviews.length}건</h3>
-
-          {reviews.length > 0 ? (
-            <ul className="space-y-6">
-              {reviews.map((review) => (
-                <li key={review.id} className="border-b border-gray-100 pb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-semibold">{review.writer}</span>
-                    <div className="flex items-center">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    <span className="text-xs text-gray-400 ml-2">
-                      {new Date(review.createdAt).toLocaleDateString("ko-KR")}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 text-sm">{review.comment}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400 text-sm">아직 등록된 리뷰가 없습니다.</p>
-          )}
-        </section>
-
-        {/* 상품 더보기 */}
-        <section className="border-b border-[var(--color-border)] mb-8 pb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base md:text-lg font-semibold">
-              {product.seller.nickname} 님의 대여상품
-            </h3>
-            <Link href="/" className="text-primary-purple text-sm font-medium cursor-pointer">
-              더보기 &gt;
-            </Link>
-          </div>
-          {sellerProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-              {sellerProducts.map((item) => (
-                <ProductCard key={item.id} product={item} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-400 text-sm">판매자의 다른 상품이 없습니다.</p>
-          )}
-        </section>
-
-        {/* 카테고리 인기 매물 */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold">{product.category} 인기매물</h3>
-            <Link
-              href="/products"
-              className="text-primary-purple text-sm font-medium hover:underline"
-            >
-              더보기 &gt;
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-            {popularProducts.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
-        </section>
       </div>
 
-      {/* 신고하기 모달 */}
-      <ReportModal
-        isOpen={showReportModal}
-        onClose={() => setShowReportModal(false)}
-        targetId={product.id}
-        targetTitle={product.title}
-        targetType="product"
-      />
-    </>
+      {/* 상품 이미지 */}
+      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+        <img 
+          src={product.image || "/images/공구.jpg"} 
+          alt={product.title} 
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* 판매자 프로필 */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-600">
+            {product.seller.nickname?.[0] || "U"}
+          </div>
+          <div>
+            <p className="font-bold text-base">{product.seller.nickname}</p>
+            <p className="text-sm text-gray-500">{product.location}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-bold text-purple-600">매너온도 36.5℃</p>
+          <div className="w-20 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
+             <div className="w-1/2 h-full bg-purple-500"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* 상품 상세 내용 */}
+      <div className="p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
+            {product.category}
+          </span>
+          <span className="text-xs text-gray-400">{product.createdAt}</span>
+        </div>
+        
+        <h1 className="text-2xl font-bold">{product.title}</h1>
+        
+        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap min-h-[150px]">
+          {product.description}
+        </p>
+
+        <div className="flex items-center gap-1 text-gray-400 text-sm">
+          <span>관심 0</span> ∙ <span>조회 12</span>
+        </div>
+      </div>
+
+      <hr className="mx-4 border-gray-100" />
+
+      {/* 2. 위치 정보 안내 및 지도 추가 */}
+      <div className="p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="w-5 h-5 text-purple-600" />
+            <span className="font-bold text-lg">거래 희망 지역</span>
+          </div>
+          <span className="text-gray-600 text-sm font-medium">{product.location}</span>
+        </div>
+
+        {/* 좌표 데이터가 있을 때만 지도 표시 */}
+        {product.latitude && product.longitude ? (
+          <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+            <StaticGoogleMap 
+              lat={product.latitude} 
+              lng={product.longitude} 
+              neighborhood={product.location} 
+            />
+          </div>
+        ) : (
+          <div className="w-full h-32 bg-gray-50 rounded-2xl flex items-center justify-center border border-dashed border-gray-200">
+            <p className="text-gray-400 text-sm font-medium">거래 장소 정보가 없습니다.</p>
+          </div>
+        )}
+        <p className="text-xs text-gray-400">
+          * 대여자와 채팅을 통해 상세 거래 장소를 확정해 주세요.
+        </p>
+      </div>
+
+      {/* 하단 고정 바 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-20">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button className="text-gray-400 hover:text-red-500 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+              </svg>
+            </button>
+            <div className="border-l pl-4">
+              <p className="font-bold text-lg">{product.price.toLocaleString()}원</p>
+              <p className="text-xs text-purple-600 font-medium">1일 대여 기준</p>
+            </div>
+          </div>
+          <button 
+            disabled={product.isRented}
+            className={`px-8 py-3 rounded-xl font-bold text-white transition-all active:scale-95 ${
+              product.isRented ? "bg-gray-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-200"
+            }`}
+          >
+            {product.isRented ? "대여 중" : "채팅하기"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

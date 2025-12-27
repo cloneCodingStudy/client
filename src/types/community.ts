@@ -7,6 +7,9 @@ export interface CommunityPost {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  location: string;        
+  latitude?: number;       
+  longitude?: number; 
   category: CommunityCategory;
   username: string;
   images?: CommunityImage[];
@@ -14,9 +17,7 @@ export interface CommunityPost {
 }
 
 //커뮤니티 카테고리
-export interface CommunityCategory {
-  category: "ALL" | "HOT" | "INFO" | "TIP" | "PET" | "BBANG" | "LOST";
-}
+export type CommunityCategory = "ALL" | "HOT" | "INFO" | "TIP" | "PET" | "BBANG" | "LOST";
 
 //커뮤니티 유저
 export interface CommunityUser {
