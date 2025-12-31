@@ -11,6 +11,7 @@ export default function RentPage() {
   const router = useRouter();
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
+  const [isRequesting, setIsRequesting] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -30,11 +31,88 @@ export default function RentPage() {
     fetchData();
   }, [id, router]);
 
+  useEffect(() => {
+    const merchantId = process.env.NEXT_PUBLIC_PORTONE_MERCHANT_ID;
+    if (!merchantId) return;
+
+    const timer = setInterval(() => {
+      if (window.IMP) {
+        window.IMP.init(merchantId);
+        clearInterval(timer);
+      }
+    }, 200);
+
+    return () => clearInterval(timer);
+  }, []);
+
+
+
   const handleRent = () => {
     if (!product) return;
 
-    // TODO: 포트원 결제 연동 예정
-    toast.success("포트원 결제 연동 예정");
+    if (!window.IMP) {
+      toast.error("결제 스크립트를 불러오지 못했습니다.");
+      return;
+    }
+
+    const merchantId = process.env.NEXT_PUBLIC_PORTONE_MERCHANT_ID;
+    if (!merchantId) {
+      toast.error("결제 설정이 누락되었습니다.");
+      return;
+    }
+
+    if (isRequesting) return;
+    setIsRequesting(true);
+
+    const merchantUid = `rent_${product.id}_${crypto.randomUUID()}`;
+
+    window.IMP.request_pay(
+      {
+        pg: "html5_inicis.INIpayTest",
+        pay_method: "card",
+        merchant_uid: merchantUid,
+        name: product.title,
+        amount: product.price,
+        buyer_email: "test@example.com",
+        buyer_name: "테스트 사용자",
+        buyer_tel: "010-0000-0000",
+        buyer_addr: product.location,
+        buyer_postcode: "000-000",
+      },
+      async (response) => {
+        if (response.success && response.imp_uid && response.merchant_uid) {
+          try {
+            const result = await fetch("/api/payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                imp_uid: response.imp_uid,
+                merchant_uid: response.merchant_uid,
+                amount: product.price,
+              }),
+            });
+
+            if (!result.ok) {
+              throw new Error("결제 검증 요청에 실패했습니다.");
+            }
+
+            toast.success("결제가 완료되었습니다.");
+          } catch (error) {
+            console.error(error);
+            toast.error("결제 확인 중 문제가 발생했습니다.");
+          } finally {
+            setIsRequesting(false);
+          }
+
+          return;
+        }
+
+            toast.error(response.error_msg ?? "결제에 실패했습니다.");
+        setIsRequesting(false);
+      },
+    );
   };
 
   if (!product) return <p className="text-center mt-20">불러오는 중...</p>;
@@ -58,9 +136,10 @@ export default function RentPage() {
       {/* 결제 버튼 */}
       <button
         onClick={handleRent}
-        className="w-full py-4 rounded-xl bg-primary-purple text-white font-semibold hover:bg-primary-purple-alt transition text-lg"
-      >
-        결제하고 빌려요
+        className="w-full py-4 rounded-xl bg-primary-purple text-white font-semibold hover:bg-primary-purple-alt transition text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={isRequesting}
+        >
+        {isRequesting ? "결제 처리 중..." : "결제하고 빌려요"}
       </button>
     </div>
   );
