@@ -6,12 +6,14 @@ import toast from "react-hot-toast";
 
 import { Product } from "@/types/product";
 import { getProduct } from "@/data/actions/products.api";
+import useUserStore from "@/store/useUserStore";
 
 export default function RentPage() {
   const router = useRouter();
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [isRequesting, setIsRequesting] = useState(false);
+  const { user } = useUserStore();
 
   useEffect(() => {
     async function fetchData() {
@@ -48,6 +50,13 @@ export default function RentPage() {
 
 
   const handleRent = () => {
+
+    if (!user) {
+      toast.error("로그인이 필요한 서비스입니다.");
+      router.push("/login?returnUrl=/rent/[id]");
+      return;
+    }
+
     if (!product) return;
 
     if (!window.IMP) {
@@ -73,9 +82,9 @@ export default function RentPage() {
         merchant_uid: merchantUid,
         name: product.title,
         amount: product.price,
-        buyer_email: "test@example.com",
-        buyer_name: "테스트 사용자",
-        buyer_tel: "010-0000-0000",
+        buyer_email: user?.email,
+        buyer_name: user?.name,
+        buyer_tel: user?.phoneNumber,
         buyer_addr: product.location,
         buyer_postcode: "000-000",
       },
