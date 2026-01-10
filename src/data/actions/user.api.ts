@@ -1,6 +1,60 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
+ * JWT 토큰 페이로드 디코딩 (공통 유틸)
+ */
+export const decodePayload = (token: string) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (err) {
+    console.error("JWT Decoding Error:", err);
+    return null;
+  }
+};
+
+/**
+ * 로그인 요청
+ */
+export async function loginUser(credentials: { userId: string; password: string }) {
+  const res = await fetch(`${API_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+    credentials: "include",
+  });
+
+  if (!res.ok) return { ok: false, status: res.status };
+
+  const data = await res.json();
+  const accessToken = res.headers.get("access");
+  
+  return { ok: true, data, accessToken };
+}
+
+/**
+ * 회원가입 요청
+ */
+export async function signupUser(payload: any) {
+  const res = await fetch(`${API_URL}/user/sign-up`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await res.json();
+  return { ok: res.ok, result };
+}
+
+/**
  * 회원정보 수정
  */
 export async function updateUser(data: {

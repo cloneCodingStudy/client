@@ -1,5 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast"; 
+import useUserStore from "@/store/useUserStore";
 import {
   HomeIcon,
   UserIcon,
@@ -11,10 +16,14 @@ import {
   StarIcon,
   TvIcon,
   MapPinIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import LocationSection from "@/components/LocationSection";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user } = useUserStore(); 
+
   const categories = [
     { icon: HomeIcon, label: "생활용품", href: "/category/lifestyle" },
     { icon: UserIcon, label: "의류/잡화", href: "/category/beauty" },
@@ -27,215 +36,104 @@ export default function HomePage() {
   ];
 
   const productList = [
-    {
-      id: 1,
-      title: "아파트 베란다 인테리어 공구 빌려주세요",
-      location: "성북구 성북동",
-      price: "50,000원",
-      rating: 4.8,
-      reviews: 12,
-      tags: ["인테리어", "베란다"],
-      image: "/images/공구.jpg",
-    },
-    {
-      id: 2,
-      title: "아파트 베란다 인테리어 공구 빌려주세요",
-      location: "성북구 동선동",
-      price: "30,000원",
-      rating: 4.9,
-      reviews: 24,
-      tags: ["인테리어", "베란다"],
-      image: "/images/공구.jpg",
-    },
-    {
-      id: 3,
-      title: "아파트 베란다 인테리어 공구 빌려주세요",
-      location: "성북구 삼선동",
-      price: "80,000원",
-      rating: 5.0,
-      reviews: 8,
-      tags: ["인테리어", "베란다"],
-      image: "/images/공구.jpg",
-    },
-    {
-      id: 4,
-      title: "아파트 베란다 인테리어 공구 빌려주세요",
-      location: "성북구 성북동",
-      price: "25,000원",
-      rating: 4.7,
-      reviews: 15,
-      tags: ["인테리어", "베란다"],
-      image: "/images/공구.jpg",
-    },
+    { id: 1, title: "아파트 베란다 인테리어 공구 빌려주세요", location: "성북구 성북동", price: "50,000원", rating: 4.8, reviews: 12, tags: ["인테리어", "베란다"], image: "/images/공구.jpg" },
+    { id: 2, title: "아파트 베란다 인테리어 공구 빌려주세요", location: "성북구 동선동", price: "30,000원", rating: 4.9, reviews: 24, tags: ["인테리어", "베란다"], image: "/images/공구.jpg" },
   ];
 
   const communityPostList = [
     { date: "2024-03-15", title: "길 잃은 고양이 찾아드려요" },
     { date: "2024-03-14", title: "길 잃은 고양이 보셨나요?ㅜㅜ" },
-    { date: "2024-03-15", title: "길 잃은 고양이 찾아드려요" },
-    { date: "2024-03-14", title: "길 잃은 고양이 보셨나요?ㅜㅜ" },
   ];
 
+  const handleChatClick = (e: React.MouseEvent) => {
+    const token = localStorage.getItem("accessToken");
+    
+    if (!user || !token) {
+      e.preventDefault(); 
+      toast.error("로그인이 필요한 서비스입니다.");
+      router.push("/login?returnUrl=/chat");
+    }
+  };
+
   return (
-    <div className="space-y-12">
+    <div className="relative space-y-12 pb-20">
       <LocationSection />
+
+      {/* 플로팅 채팅 버튼 */}
+      <Link
+        href="/chat"
+        onClick={handleChatClick} // 클릭 시 로그인 체크
+        className="fixed bottom-10 right-10 z-50 flex items-center gap-2 px-6 py-4 bg-primary-purple text-white rounded-full shadow-2xl hover:scale-105 transition-all duration-300 shadow-purple-200"
+      >
+        <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
+        <span className="font-bold">채팅 목록</span>
+      </Link>
+
       {/* Category Section */}
       <section>
-        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">
-          실시간 인기 검색어
-        </h2>
+        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">실시간 인기 검색어</h2>
         <p className="text-[var(--color-text-secondary)] mb-8">#자전거 #캠핑의자 #유아용품</p>
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((category, index) => (
-            <Link
-              key={index}
-              href={category.href}
-              className="flex flex-col items-center p-6 bg-white rounded-xl border border-[var(--color-border)]
-                       hover:shadow-md hover:bg-[#FAFAFF] transition-all duration-200 group"
-            >
-              <div
-                className="w-12 h-12 bg-[var(--color-primary)]/10 rounded-xl flex items-center justify-center mb-3
-                            group-hover:bg-[var(--color-primary)]/20 transition-colors"
-              >
+            <Link key={index} href={category.href} className="flex flex-col items-center p-6 bg-white rounded-xl border border-[var(--color-border)] hover:shadow-md hover:bg-[#FAFAFF] transition-all group">
+              <div className="w-12 h-12 bg-[var(--color-primary)]/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-[var(--color-primary)]/20">
                 <category.icon className="w-6 h-6 text-[var(--color-primary)]" />
               </div>
-              <span className="text-sm font-medium text-[var(--color-text-primary)] text-center">
-                {category.label}
-              </span>
+              <span className="text-sm font-medium text-center">{category.label}</span>
             </Link>
           ))}
         </div>
       </section>
 
+      {/* Product Section */}
       <section>
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
-              우리 동네 인기 물건 빌려요
-            </h2>
-            <p className="text-[var(--color-text-secondary)] mt-1">
-              내 근처에서 인기 있는 다양한 물건을 바로 대여 하세요.
-            </p>
-          </div>
-          <Link
-            href="/products"
-            className="flex items-center text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] 
-                     font-medium transition-colors"
-          >
+          <h2 className="text-2xl font-bold">우리 동네 인기 물건 빌려요</h2>
+          <Link href="/products" className="flex items-center text-[var(--color-primary)] font-medium">
             더보기 <ChevronRightIcon className="w-4 h-4 ml-1" />
           </Link>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {productList.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden
-                       hover:shadow-lg transition-shadow duration-200"
-            >
+            <div key={product.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative h-40 bg-gray-200">
                 <Image src={product.image} alt={product.title} fill className="object-cover" />
-                <div className="absolute top-3 right-3">
-                  <span
-                    className="bg-[var(--color-highlight)] text-[var(--color-text-primary)] 
-                                 px-2 py-1 text-xs font-medium rounded-full"
-                  >
-                    NEW
-                  </span>
-                </div>
               </div>
-
               <div className="p-4">
-                <h3 className="font-semibold text-[var(--color-text-primary)] mb-2 line-clamp-2">
-                  {product.title}
-                </h3>
-
-                <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2">
-                  <MapPinIcon className="w-4 h-4 mr-1" />
-                  {product.location}
-                </div>
-
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <StarIcon className="w-4 h-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium ml-1">{product.rating}</span>
-                    <span className="text-sm text-[var(--color-text-secondary)] ml-1">
-                      ({product.reviews})
-                    </span>
-                  </div>
-                  <span className="text-[var(--color-primary)] font-bold">{product.price}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-1">
-                  {product.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-[var(--color-primary)]/10 text-[var(--color-primary)] 
-                               text-xs px-2 py-1 rounded-full"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+                <h3 className="font-semibold mb-2 line-clamp-2">{product.title}</h3>
+                <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2"><MapPinIcon className="w-4 h-4 mr-1" />{product.location}</div>
+                <div className="flex items-center justify-between font-bold text-[var(--color-primary)]">{product.price}</div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Community Section */}
       <section>
-        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">커뮤니티</h2>
-        <p className="text-[var(--color-text-secondary)] mb-6">
-          이웃들과의 실시간 소통, 후기 공유, 꿀팁 등 커뮤니티 소식을 간편하게 확인하세요.
-        </p>
-
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">커뮤니티</h2>
+          <Link 
+            href="/chat" 
+            onClick={handleChatClick} 
+            className="flex items-center gap-1 text-sm font-semibold text-primary-purple bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-all"
+          >
+            <ChatBubbleLeftRightIcon className="w-4 h-4" /> 내 채팅 목록
+          </Link>
+        </div>
         <div className="bg-white rounded-xl border border-[var(--color-border)] p-6">
           <div className="space-y-4">
             {communityPostList.map((post, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between py-3 border-b 
-                                        border-[var(--color-border)] last:border-b-0"
-              >
+              <div key={index} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0">
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3"></div>
-                  <span className="text-[var(--color-text-primary)]">{post.title}</span>
+                  <span>{post.title}</span>
                 </div>
-                <span className="text-sm text-[var(--color-text-secondary)]">{post.date}</span>
+                <span className="text-sm text-gray-400">{post.date}</span>
               </div>
             ))}
           </div>
-
-          <div className="text-center mt-6">
-            <Link
-              href="/community"
-              className="inline-flex items-center px-6 py-3 bg-[var(--color-primary)] 
-                        rounded-full hover:bg-[var(--color-primary-hover)] 
-                       transition-colors font-medium"
-            >
-              커뮤니티 더보기
-            </Link>
-          </div>
         </div>
-      </section>
-
-      <section className="text-center py-12 bg-[var(--color-primary)] rounded-2xl">
-        <h2 className="text-3xl font-bold mb-4">쉐어링으로 지속 가능한 소비</h2>
-        <p className="text-[var(--color-primary-purple)] text-lg mb-8">
-          빌려요는 쉐어링을 통해
-          <br />
-          모두가 더 나은 세상을 만듭니다.
-          <br />
-          함께 실천해요.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center px-8 py-4 bg-white text-[var(--color-primary)] 
-                   rounded-full font-bold text-lg hover:bg-gray-50 transition-colors shadow-lg"
-        >
-          내 물건 빌려주기
-        </Link>
       </section>
     </div>
   );

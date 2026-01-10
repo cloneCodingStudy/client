@@ -4,6 +4,7 @@ import Footer from "@/components/_common/Footer";
 import { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
+import NotificationListener from "@/components/NotificationListener";
 
 export const metadata: Metadata = {
   title: "빌려요 Billioyo",
@@ -31,6 +32,7 @@ export default function RootLayout({
         <div className="flex min-h-screen flex-col">
           {/* 헤더 */}
           <Header />
+          <NotificationListener />
           <Toaster
             position="top-center"
             toastOptions={{

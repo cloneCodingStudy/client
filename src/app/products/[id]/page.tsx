@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
 import { getProduct, deleteProduct } from "@/data/actions/products.api";
 import { Product } from "@/types/product";
 import { 
@@ -12,10 +13,12 @@ import {
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import StaticGoogleMap from "@/components/staticGoogleMap"; 
+import useUserStore from "@/store/useUserStore"; 
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useUserStore(); 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +38,48 @@ export default function ProductDetailPage() {
     }
     fetchDetail();
   }, [id, router]);
+
+  /**
+   * 채팅하기 버튼 핸들러
+   */
+
+  const handleChatWithSeller = async () => {
+    if (!product) return;
+  if (!user) {
+    toast.error("로그인이 필요합니다.");
+    router.push("/login");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("accessToken");
+    
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/chat/rooms`, 
+      {
+        title: product.title,
+        userIds: [user.id, product.seller.id] 
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const realChatRoomId = response.data; 
+
+    const query = new URLSearchParams({
+      opponent: product.seller.nickname,
+      title: product.title,
+      email: product.seller.email,
+    }).toString();
+
+    router.push(`/chat/${realChatRoomId}?${query}`);
+    
+  } catch (error) {
+    console.error("채팅방 연결 실패:", error);
+    toast.error("채팅방 연결 중 오류가 발생했습니다.");
+  }
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
@@ -107,7 +152,7 @@ export default function ProductDetailPage() {
 
       <hr className="mx-4 border-gray-100" />
 
-      {/* 2. 위치 정보 안내 및 지도 추가 */}
+      {/* 위치 정보 안내 및 지도 */}
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -117,7 +162,6 @@ export default function ProductDetailPage() {
           <span className="text-gray-600 text-sm font-medium">{product.location}</span>
         </div>
 
-        {/* 좌표 데이터가 있을 때만 지도 표시 */}
         {product.latitude && product.longitude ? (
           <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
             <StaticGoogleMap 
@@ -152,6 +196,7 @@ export default function ProductDetailPage() {
           </div>
           <button 
             disabled={product.isRented}
+            onClick={handleChatWithSeller}
             className={`px-8 py-3 rounded-xl font-bold text-white transition-all active:scale-95 ${
               product.isRented ? "bg-gray-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-200"
             }`}
