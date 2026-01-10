@@ -46,7 +46,7 @@ export default function ChatListPage() {
           rooms.map((room) => (
             <Link
               key={room.roomId}
-              href={`/chat/${room.roomId}?opponent=${encodeURIComponent(room.opponentNickname)}&title=${encodeURIComponent(room.title)}&email=${room.opponentEmail}`}
+              href={`/chat/${room.roomId}?opponent=${encodeURIComponent(room.opponentNickname)}&title=${encodeURIComponent(room.title)}`}
               className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-none"
             >
               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold flex-shrink-0">

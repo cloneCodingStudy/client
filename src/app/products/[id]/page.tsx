@@ -3,14 +3,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import { getProduct, deleteProduct } from "@/data/actions/products.api";
+import { getProduct, toggleProductLike, toggleProductBookmark } from "@/data/actions/products.api";
 import { Product } from "@/types/product";
 import { 
   MapPinIcon, 
   ChevronLeftIcon, 
   ShareIcon, 
-  EllipsisHorizontalIcon 
+  EllipsisHorizontalIcon,
+  HeartIcon as HeartOutlineIcon,
+  BookmarkIcon as BookmarkOutlineIcon
 } from "@heroicons/react/24/outline";
+import { 
+  HeartIcon as HeartSolidIcon,
+  BookmarkIcon as BookmarkSolidIcon 
+} from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import StaticGoogleMap from "@/components/staticGoogleMap"; 
 import useUserStore from "@/store/useUserStore"; 
@@ -21,8 +27,13 @@ export default function ProductDetailPage() {
   const { user } = useUserStore(); 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // 기능 관련 로컬 상태
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
-  // 1. 데이터 불러오기
+  // 데이터 불러오기
   useEffect(() => {
     async function fetchDetail() {
       if (!id) return;
@@ -30,6 +41,8 @@ export default function ProductDetailPage() {
       const data = await getProduct(Number(id));
       if (data) {
         setProduct(data);
+        setIsLiked(data.isLiked);
+        setLikeCount(data.likeCount || 0);
       } else {
         toast.error("상품 정보를 찾을 수 없습니다.");
         router.push("/products");
@@ -39,46 +52,68 @@ export default function ProductDetailPage() {
     fetchDetail();
   }, [id, router]);
 
-  /**
-   * 채팅하기 버튼 핸들러
-   */
+  // 찜하기 토글
+  const handleLikeToggle = async () => {
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+    const updatedCount = await toggleProductLike(Number(id));
+    if (updatedCount !== null) {
+      const newStatus = !isLiked;
+      setIsLiked(newStatus);
+      setLikeCount(updatedCount);
+      toast.success(newStatus ? "관심 목록에 추가되었습니다." : "관심 목록에서 제거되었습니다.");
+    }
+  };
 
+  // 북마크 토글
+  const handleBookmarkToggle = async () => {
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+    const result = await toggleProductBookmark(Number(id));
+    if (result) {
+      setIsBookmarked(!isBookmarked);
+      toast.success(result);
+    }
+  };
+
+  // 채팅방 생성 및 이동
   const handleChatWithSeller = async () => {
-    if (!product) return;
-  if (!user) {
-    toast.error("로그인이 필요합니다.");
-    router.push("/login");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("accessToken");
-    
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/chat/rooms`, 
-      {
-        title: product.title,
-        userIds: [user.id, product.seller.id] 
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
+    if (!product || !user) {
+      if (!user) {
+        toast.error("로그인이 필요합니다.");
+        router.push("/login");
       }
-    );
+      return;
+    }
 
-    const realChatRoomId = response.data; 
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/chat/rooms`, 
+        {
+          title: product.title,
+          userIds: [user.id, product.seller.id] 
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const query = new URLSearchParams({
-      opponent: product.seller.nickname,
-      title: product.title,
-      email: product.seller.email,
-    }).toString();
+      const realChatRoomId = response.data; 
+      const query = new URLSearchParams({
+        opponent: product.seller.nickname,
+        title: product.title,
+        email: product.seller.email,
+      }).toString();
 
-    router.push(`/chat/${realChatRoomId}?${query}`);
-    
-  } catch (error) {
-    console.error("채팅방 연결 실패:", error);
-    toast.error("채팅방 연결 중 오류가 발생했습니다.");
-  }
+      router.push(`/chat/${realChatRoomId}?${query}`);
+    } catch (error) {
+      toast.error("채팅방 연결 중 오류가 발생했습니다.");
+    }
   };
 
   if (loading) return (
@@ -90,20 +125,23 @@ export default function ProductDetailPage() {
   if (!product) return null;
 
   return (
-    <div className="max-w-2xl mx-auto pb-24 bg-white">
+    <div className="max-w-2xl mx-auto pb-24 bg-white min-h-screen shadow-sm">
       {/* 상단 네비게이션 바 */}
-      <div className="flex items-center justify-between p-4 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+      <div className="flex items-center justify-between p-4 sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-50">
         <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition">
           <ChevronLeftIcon className="w-6 h-6" />
         </button>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
+          <button onClick={handleBookmarkToggle} className="p-2 hover:bg-gray-100 rounded-full transition">
+            {isBookmarked ? <BookmarkSolidIcon className="w-6 h-6 text-yellow-500" /> : <BookmarkOutlineIcon className="w-6 h-6 text-gray-700" />}
+          </button>
           <button className="p-2 hover:bg-gray-100 rounded-full transition"><ShareIcon className="w-6 h-6" /></button>
           <button className="p-2 hover:bg-gray-100 rounded-full transition"><EllipsisHorizontalIcon className="w-6 h-6" /></button>
         </div>
       </div>
 
       {/* 상품 이미지 */}
-      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+      <div className="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
         <img 
           src={product.image || "/images/공구.jpg"} 
           alt={product.title} 
@@ -114,50 +152,52 @@ export default function ProductDetailPage() {
       {/* 판매자 프로필 */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-600">
+          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-600 border border-purple-200">
             {product.seller.nickname?.[0] || "U"}
           </div>
           <div>
-            <p className="font-bold text-base">{product.seller.nickname}</p>
+            <p className="font-bold text-base text-gray-900">{product.seller.nickname}</p>
             <p className="text-sm text-gray-500">{product.location}</p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-purple-600">매너온도 36.5℃</p>
-          <div className="w-20 h-1 bg-gray-100 rounded-full mt-1 overflow-hidden">
+          <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
              <div className="w-1/2 h-full bg-purple-500"></div>
           </div>
         </div>
       </div>
 
       {/* 상품 상세 내용 */}
-      <div className="p-4 space-y-4">
+      <div className="p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
+          <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] rounded-md font-semibold tracking-tight">
             {product.category}
           </span>
-          <span className="text-xs text-gray-400">{product.createdAt}</span>
+          <span className="text-xs text-gray-400">
+            {product.createdAt ? new Date(product.createdAt).toLocaleDateString() : "등록일 정보 없음"}
+          </span>
         </div>
         
-        <h1 className="text-2xl font-bold">{product.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 leading-tight">{product.title}</h1>
         
-        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap min-h-[150px]">
+        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap min-h-[120px] text-base">
           {product.description}
         </p>
 
-        <div className="flex items-center gap-1 text-gray-400 text-sm">
-          <span>관심 0</span> ∙ <span>조회 12</span>
+        <div className="flex items-center gap-1 text-gray-400 text-xs">
+          <span>관심 {likeCount}</span> ∙ <span>조회 12</span>
         </div>
       </div>
 
-      <hr className="mx-4 border-gray-100" />
+      <hr className="mx-6 border-gray-50" />
 
-      {/* 위치 정보 안내 및 지도 */}
-      <div className="p-4 space-y-4">
+      {/* 위치 정보 안내 */}
+      <div className="p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MapPinIcon className="w-5 h-5 text-purple-600" />
-            <span className="font-bold text-lg">거래 희망 지역</span>
+            <span className="font-bold text-lg text-gray-900">거래 희망 지역</span>
           </div>
           <span className="text-gray-600 text-sm font-medium">{product.location}</span>
         </div>
@@ -175,30 +215,30 @@ export default function ProductDetailPage() {
             <p className="text-gray-400 text-sm font-medium">거래 장소 정보가 없습니다.</p>
           </div>
         )}
-        <p className="text-xs text-gray-400">
-          * 대여자와 채팅을 통해 상세 거래 장소를 확정해 주세요.
-        </p>
       </div>
 
       {/* 하단 고정 바 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 pb-safe">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button className="text-gray-400 hover:text-red-500 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-              </svg>
+          <div className="flex items-center gap-5">
+            <button 
+              onClick={handleLikeToggle}
+              className={`transition-transform active:scale-125 ${isLiked ? "text-red-500" : "text-gray-300 hover:text-red-400"}`}
+            >
+              {isLiked ? <HeartSolidIcon className="w-8 h-8" /> : <HeartOutlineIcon className="w-8 h-8" />}
             </button>
-            <div className="border-l pl-4">
-              <p className="font-bold text-lg">{product.price.toLocaleString()}원</p>
-              <p className="text-xs text-purple-600 font-medium">1일 대여 기준</p>
+            <div className="border-l border-gray-100 pl-5">
+              <p className="font-bold text-xl text-gray-900">{product.price.toLocaleString()}원</p>
+              <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Per Day</p>
             </div>
           </div>
           <button 
             disabled={product.isRented}
             onClick={handleChatWithSeller}
-            className={`px-8 py-3 rounded-xl font-bold text-white transition-all active:scale-95 ${
-              product.isRented ? "bg-gray-300 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-200"
+            className={`px-10 py-3.5 rounded-xl font-bold text-white transition-all active:scale-95 shadow-lg ${
+              product.isRented 
+                ? "bg-gray-300 cursor-not-allowed shadow-none" 
+                : "bg-purple-600 hover:bg-purple-700 shadow-purple-100"
             }`}
           >
             {product.isRented ? "대여 중" : "채팅하기"}

@@ -1,5 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
+import { ProductListItem } from "@/types/product";
 /**
  * JWT 토큰 페이로드 디코딩 (공통 유틸)
  */
@@ -38,6 +38,80 @@ export async function loginUser(credentials: { userId: string; password: string 
   const accessToken = res.headers.get("access");
   
   return { ok: true, data, accessToken };
+}
+
+/**
+ * 내가 등록한 상품 조회 (페이징 적용)
+ */
+export async function getMyProducts(page: number = 0, size: number = 10) {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const res = await fetch(`${API_URL}/user/my-products?page=${page}&size=${size}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) throw new Error("내 상품을 불러오는데 실패했습니다.");
+    
+    const data = await res.json();
+    
+    const mappedContent: ProductListItem[] = data.data.content.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      isRented: item.status,
+      createdAt: item.registerTime, 
+      seller: {
+        id: 0, 
+        nickname: item.nickname, 
+        email: ""
+      }
+    }));
+
+    return { ...data.data, content: mappedContent }; 
+  } catch (err) {
+    console.error("[getMyProducts]", err);
+    return null;
+  }
+}
+
+/**
+ * 내 관심 목록 조회 (type: 'likes' | 'bookmarks')
+ */
+export async function getMyInteractions(type: 'likes' | 'bookmarks', page: number = 0) {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const endpoint = type === 'likes' ? 'my-likes' : 'my-bookmarks';
+    
+    const res = await fetch(`${API_URL}/user/${endpoint}?page=${page}&size=10`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) throw new Error("관심 목록을 불러오는데 실패했습니다.");
+    
+    const data = await res.json();
+    
+    const mappedContent = data.data.content.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      isRented: item.status,
+      createdAt: item.registerTime,
+      seller: { id: 0, nickname: item.nickname }
+    }));
+
+    return { ...data.data, content: mappedContent };
+  } catch (err) {
+    console.error(`[getMyInteractions]`, err);
+    return null;
+  }
 }
 
 /**

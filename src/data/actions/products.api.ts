@@ -39,9 +39,21 @@ export async function getProducts(
 /**
  * 대여 게시글 상세 조회
  */
+// src/data/actions/products.api.ts
+
 export async function getProduct(postId: number): Promise<Product | null> {
   try {
-    const res = await fetch(`${API_URL}/products/${postId}`);
+    // 1. 토큰 가져오기
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+    const res = await fetch(`${API_URL}/products/${postId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
     if (!res.ok) throw new Error("상품 상세 조회에 실패했습니다.");
     const data = await res.json();
 
@@ -53,11 +65,13 @@ export async function getProduct(postId: number): Promise<Product | null> {
       description: data.description,
       price: data.price,
       location: data.location,
-      latitude: data.latitude,   
-      longitude: data.longitude, 
+      latitude: data.latitude,
+      longitude: data.longitude,
       image: images[0] ?? "/images/공구.jpg",
       isRented: data.status,
       rating: data.rating || 0,
+      likeCount: data.likeCount || 0,
+      isLiked: data.isLiked || false,
       reviews: data.reviewsCount || 0,
       seller: {
         id: data.seller?.id || 0,
@@ -87,13 +101,11 @@ export async function createProduct(data: any): Promise<number | null> {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      // 프론트의 latitude/longitude 필드명이 백엔드 DTO와 일치해야 함
       body: JSON.stringify(data),
     });
 
     if (!res.ok) throw new Error("상품 등록에 실패했습니다.");
     const result = await res.json();
-    // 백엔드 ApiResponse<Long> 구조에 따라 result.data 반환
     return result.data; 
   } catch (err) {
     console.error("[createProduct]", err);
@@ -175,5 +187,41 @@ export async function createProductReview(
   } catch (err) {
     console.error("[createProductReview]", err);
     return false;
+  }
+}
+
+/**
+ * 대여 게시글 찜(좋아요) 토글
+ */
+export async function toggleProductLike(postId: number): Promise<number | null> {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const res = await fetch(`${API_URL}/products/${postId}/like`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("찜하기 처리에 실패했습니다.");
+    return await res.json(); 
+  } catch (err) {
+    console.error("[toggleProductLike]", err);
+    return null;
+  }
+}
+
+/**
+ * 대여 게시글 북마크 토글
+ */
+export async function toggleProductBookmark(postId: number): Promise<string | null> {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const res = await fetch(`${API_URL}/products/${postId}/bm`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error("북마크 처리에 실패했습니다.");
+    return await res.text(); 
+  } catch (err) {
+    console.error("[toggleProductBookmark]", err);
+    return null;
   }
 }

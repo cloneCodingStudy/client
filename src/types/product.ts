@@ -18,7 +18,9 @@ export type Product = {
   rating: number;
   reviews: number;
   seller: SellerInfo;
+  likeCount: number;
   category: string;
+  isLiked: boolean;
   createdAt: string;
 };
 
