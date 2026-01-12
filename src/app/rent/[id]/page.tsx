@@ -85,7 +85,7 @@ export default function RentPage() {
           throw new Error("주문서 생성에 실패했습니다.");
         }
 
-         window.IMP.request_pay(
+         window.IMP!.request_pay(
           {
             pg: "html5_inicis.INIpayTest",
             pay_method: "card",
@@ -101,10 +101,12 @@ export default function RentPage() {
           async (response) => {
             if (response.success && response.imp_uid && response.merchant_uid) {
               try {
-                const result = await fetch("/api/payment", {
+                const token = localStorage.getItem("accessToken")
+                const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/complete` , {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                   },
                   body: JSON.stringify({
                     imp_uid: response.imp_uid,
