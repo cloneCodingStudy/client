@@ -225,3 +225,43 @@ export async function toggleProductBookmark(postId: number): Promise<string | nu
     return null;
   }
 }
+
+export async function analyzeProductImage(imageUrl: string, signal?: AbortSignal) {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const res = await fetch(`${API_URL}/products/analyze-image`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ imageUrl }),
+      signal, 
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "서버 응답 에러");
+    }
+
+    const result = await res.json();
+    console.log("AI 분석 결과 원본:", result);
+
+    if (result && result.data) {
+      try {
+        return typeof result.data === "string" 
+          ? JSON.parse(result.data) 
+          : result.data;
+      } catch (parseError) {
+        console.error("JSON 파싱 실패:", result.data);
+        return null;
+      }
+    }
+    
+    return null;
+  } catch (err: any) {
+    if (err.name === 'AbortError') throw err;
+    console.error("[analyzeProductImage API]", err);
+    return null;
+  }
+}
