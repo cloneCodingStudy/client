@@ -21,7 +21,9 @@ export default function ProductEditPage() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [description, setDescription] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  
   const [showMapModal, setShowMapModal] = useState(false);
+  const [tempLocation, setTempLocation] = useState<{ neighborhood: string; lat: number; lng: number } | null>(null);
 
   const categories = [
     { label: "생활용품", value: "LIVING" },

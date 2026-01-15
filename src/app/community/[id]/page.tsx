@@ -88,9 +88,9 @@ export default function CommunityDetailPage() {
         <div className="text-gray-800 whitespace-pre-line leading-relaxed mb-6">{post.content}</div>
 
         {/* 이미지 */}
-        {post.images && post.images.length > 0 && (
+        {post.imageUrls && post.imageUrls.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-10">
-            {post.images.map((img) => (
+            {post.imageUrls.map((img) => (
               <div key={img.id} className="relative w-full h-56 rounded-lg overflow-hidden">
                 <Image src={img.imageUrl} alt="첨부 이미지" fill className="object-cover" />
               </div>
