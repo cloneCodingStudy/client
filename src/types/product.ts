@@ -22,6 +22,7 @@ export type Product = {
   category: string;
   isLiked: boolean;
   createdAt: string;
+  viewCount: number;
 };
 
 export type ProductListItem = {

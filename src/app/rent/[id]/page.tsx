@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 import { Product } from "@/types/product";
 import { getProduct } from "@/data/actions/products.api";
@@ -151,11 +152,21 @@ export default function RentPage() {
 
       {/* 상품 정보 */}
       <div className="border rounded-xl p-6 flex items-start gap-6 shadow-sm mb-8 bg-white">
-        <div className="w-28 h-28 bg-gray-200 rounded-lg overflow-hidden" />
-        <div className="flex flex-col gap-1">
-          <span className="text-lg font-semibold">{product.title}</span>
+        {/* 이미지 영역 수정 */}
+        <div className="relative w-28 h-28 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+          <Image
+            src={product.image || "/images/공구.jpg"} 
+            alt={product.title}
+            fill
+            className="object-cover"
+            sizes="112px"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 justify-center self-stretch">
+          <span className="text-lg font-semibold line-clamp-1">{product.title}</span>
           <span className="text-gray-500 text-sm">{product.location}</span>
-          <span className="text-3xl font-bold text-[var(--color-primary)] mt-2">
+          <span className="text-3xl font-bold text-[var(--color-primary)] mt-auto">
             {product.price.toLocaleString()}원
           </span>
         </div>

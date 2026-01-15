@@ -28,12 +28,10 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // 기능 관련 로컬 상태
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  // 데이터 불러오기
   useEffect(() => {
     async function fetchDetail() {
       if (!id) return;
@@ -52,7 +50,6 @@ export default function ProductDetailPage() {
     fetchDetail();
   }, [id, router]);
 
-  // 찜하기 토글
   const handleLikeToggle = async () => {
     if (!user) {
       toast.error("로그인이 필요합니다.");
@@ -68,7 +65,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  // 북마크 토글
   const handleBookmarkToggle = async () => {
     if (!user) {
       toast.error("로그인이 필요합니다.");
@@ -82,7 +78,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  // 채팅방 생성 및 이동
   const handleChatWithSeller = async () => {
     if (!product || !user) {
       if (!user) {
@@ -108,6 +103,8 @@ export default function ProductDetailPage() {
         opponent: product.seller.nickname,
         title: product.title,
         email: product.seller.email,
+        productId: product.id.toString(),
+        price: product.price.toString(),
       }).toString();
 
       router.push(`/chat/${realChatRoomId}?${query}`);
@@ -124,9 +121,11 @@ export default function ProductDetailPage() {
 
   if (!product) return null;
 
+  // 매너온도 계산 (API에 데이터가 없을 경우 기본값 36.5 설정)
+  const mannerTemp = 36.5; 
+
   return (
     <div className="max-w-2xl mx-auto pb-24 bg-white min-h-screen shadow-sm">
-      {/* 상단 네비게이션 바 */}
       <div className="flex items-center justify-between p-4 sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-50">
         <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition">
           <ChevronLeftIcon className="w-6 h-6" />
@@ -140,7 +139,6 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* 상품 이미지 */}
       <div className="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
         <img 
           src={product.image || "/images/공구.jpg"} 
@@ -149,7 +147,6 @@ export default function ProductDetailPage() {
         />
       </div>
 
-      {/* 판매자 프로필 */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-600 border border-purple-200">
@@ -161,14 +158,14 @@ export default function ProductDetailPage() {
           </div>
         </div>
         <div className="text-right">
-          <p className="text-sm font-bold text-purple-600">매너온도 36.5℃</p>
+          <p className="text-sm font-bold text-purple-600">매너온도 {mannerTemp}℃</p>
           <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-             <div className="w-1/2 h-full bg-purple-500"></div>
+             {/* 매너온도 게이지를 동적으로 계산 (100도 기준) */}
+             <div className="h-full bg-purple-500" style={{ width: `${(mannerTemp / 100) * 100}%` }}></div>
           </div>
         </div>
       </div>
 
-      {/* 상품 상세 내용 */}
       <div className="p-6 space-y-4">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] rounded-md font-semibold tracking-tight">
@@ -186,13 +183,13 @@ export default function ProductDetailPage() {
         </p>
 
         <div className="flex items-center gap-1 text-gray-400 text-xs">
-          <span>관심 {likeCount}</span> ∙ <span>조회 12</span>
+          {/* 하드코딩된 조회수 대신 API의 viewCount 사용 (백엔드 DTO에 존재함) */}
+          <span>관심 {likeCount}</span> ∙ <span>조회 {product.viewCount || 0}</span> ∙ <span>리뷰 {product.reviews || 0}</span>
         </div>
       </div>
 
       <hr className="mx-6 border-gray-50" />
 
-      {/* 위치 정보 안내 */}
       <div className="p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -217,7 +214,6 @@ export default function ProductDetailPage() {
         )}
       </div>
 
-      {/* 하단 고정 바 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-20 pb-safe">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-5">

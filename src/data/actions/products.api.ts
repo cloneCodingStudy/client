@@ -79,6 +79,7 @@ export async function getProduct(postId: number): Promise<Product | null> {
       },
       category: data.category,
       createdAt: data.createdAt,
+      viewCount: data.viewCount,
     };
 
     return mapped;
