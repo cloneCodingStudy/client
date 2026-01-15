@@ -169,10 +169,10 @@ export default function CommunityPage() {
                 </div>
               </div>
 
-              {post.images && post.images.length > 0 && post.images[0].imageUrl && (
+              {post.imageUrls && post.imageUrls.length > 0 && post.imageUrls[0].imageUrl && (
                 <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
                   <Image
-                    src={post.images[0].imageUrl}
+                    src={post.imageUrls[0].imageUrl}
                     alt={post.title}
                     fill
                     className="object-cover transition group-hover:scale-105"

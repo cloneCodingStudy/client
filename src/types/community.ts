@@ -12,7 +12,7 @@ export interface CommunityPost {
   longitude?: number; 
   category: CommunityCategory;
   username: string;
-  images?: CommunityImage[];
+  imageUrls?: CommunityImage[];
   comments?: CommunityComment[];
 }
 

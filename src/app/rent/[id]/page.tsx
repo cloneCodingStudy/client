@@ -109,10 +109,10 @@ export default function RentPage() {
                     Authorization: `Bearer ${token}`,
                   },
                   body: JSON.stringify({
-                    imp_uid: response.imp_uid,
-                    merchant_uid: response.merchant_uid,
+                    impUid: response.imp_uid,
+                    merchantUid: response.merchant_uid,
                     amount: order.amount,
-                    order_id: order.orderId,
+                    orderId: order.orderId,
                   }),
                 });
 

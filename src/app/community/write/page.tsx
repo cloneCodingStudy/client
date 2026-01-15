@@ -2,20 +2,43 @@
 import ImageUpload from "@/components/ImageUpload";
 import { createCommunityPost } from "@/data/actions/community.api";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import useLocationStore from "@/store/useLocationStore"; // 위치 스토어 추가
+import MapModal from "@/components/mapModal";
+
+
 
 export default function CommunityPostWrite() {
   const router = useRouter();
-  const { location } = useLocationStore(); // 현재 위치 정보 가져오기
+  
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [location, setLocation] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const max = 60;
+  
+  const handleLocationSelect = (address: string, lat: number, lng: number) => {
+    setLocation(address);
+    setCoords({ lat, lng });
+  };
+
+  const handleMapConfirm = () => {
+    if (location && coords) {
+      setShowMapModal(false);
+      toast.success("위치가 설정되었습니다.");
+    } else {
+      toast.error("위치를 선택해주세요.");
+    }
+  };
+
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +46,10 @@ export default function CommunityPostWrite() {
     // 유효성 검사
     if (!category) {
       toast.error("게시판을 선택해주세요.");
+      return;
+    }
+    if (!location) {
+      toast.error("위치를 설정해주세요.");
       return;
     }
     if (!title.trim()) {
@@ -40,9 +67,9 @@ export default function CommunityPostWrite() {
         content,
         category,
         imageUrls, 
-        location: location?.neighborhood || "알 수 없는 동네", 
-        lat: location?.lat, 
-        lng: location?.lng, 
+        location,
+        lat: coords?.lat,
+        lng: coords?.lng,
       });
 
       if (res) {
@@ -61,7 +88,7 @@ export default function CommunityPostWrite() {
     <div className="max-w-3xl mx-auto px-6 py-10">
       {/* 현재 위치 표시 (선택 사항) */}
       <div className="text-xs text-purple-600 font-semibold mb-2 px-1">
-        📍 현재 위치: {location?.neighborhood || "위치 정보 없음"}
+        📍 현재 위치: {location || "위치 정보 없음"}
       </div>
       
       <div className="text-sm text-gray-600 p-4 bg-gray-50 rounded-lg mb-8">
@@ -101,7 +128,22 @@ export default function CommunityPostWrite() {
             {title.length}/{max}
           </span>
         </div>
-
+        <section className="bg-purple-50 p-6 rounded-2xl border border-purple-100">
+          <label className="text-sm font-bold text-purple-700 block mb-3">어디서 글을 쓰시나요?</label>
+          <button
+            type="button"
+            onClick={() => setShowMapModal(true)}
+            className="w-full py-4 bg-white border-2 border-purple-200 border-dashed rounded-xl text-purple-600 hover:bg-white hover:border-purple-400 transition-all flex items-center justify-center gap-2 mb-3"
+          >
+            <span className="text-xl">📍</span>
+            <span className="font-semibold">{location ? "위치 변경하기" : "지도로 위치 선택하기"}</span>
+          </button>
+          {location && (
+            <div className="bg-purple-100/50 px-4 py-2 rounded-lg text-sm text-purple-800 font-medium flex items-center gap-2">
+              ✅ {location}
+            </div>
+          )}
+        </section>
         {/* 내용 */}
         <div>
           <textarea
@@ -126,6 +168,15 @@ export default function CommunityPostWrite() {
           </button>
         </div>
       </form>
+      <MapModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        onConfirm={handleMapConfirm}
+        onLocationSelect={handleLocationSelect}
+        currentLocation={location}
+        initialCenter={coords || undefined}
+      />
     </div>
+    
   );
 }
