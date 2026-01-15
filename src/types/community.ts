@@ -12,6 +12,7 @@ export interface CommunityPost {
   longitude?: number; 
   category: CommunityCategory;
   username: string;
+  thumbnailUrl?: string;
   imageUrls?: CommunityImage[];
   comments?: CommunityComment[];
 }
@@ -40,3 +41,4 @@ export interface CommunityComment {
   content: string;
   createdAt: string;
 }
+ 

@@ -34,6 +34,13 @@ export default function CommunityPage() {
       const data = await getCommunityPosts(0, 20, positionParams);
       
       if (data && data.content) {
+        console.log("RAW thumbnailUrl:", JSON.stringify(data.content[0]?.thumbnailUrl));
+        console.log(
+          "CHAR CODES:",
+          [...(data.content[0]?.thumbnailUrl ?? "")].map(c => c.charCodeAt(0))
+        );
+        console.log("RAW object:", data.content[0]);
+        // ✅ 여기까지
         setPosts(data.content);
       } else {
         setPosts([]);
@@ -168,11 +175,11 @@ export default function CommunityPage() {
                   </div>
                 </div>
               </div>
-
-              {post.imageUrls && post.imageUrls.length > 0 && post.imageUrls[0].imageUrl && (
+              
+              {post.thumbnailUrl && (
                 <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
                   <Image
-                    src={post.imageUrls[0].imageUrl}
+                    src={post.thumbnailUrl}
                     alt={post.title}
                     fill
                     className="object-cover transition group-hover:scale-105"
