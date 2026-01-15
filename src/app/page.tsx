@@ -151,13 +151,13 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">커뮤니티</h2>
           <Link 
-            href="/chat" 
-            onClick={handleChatClick} 
-            className="flex items-center gap-1 text-sm font-semibold text-primary-purple bg-purple-50 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-all"
+            href="/community" 
+            className="flex items-center text-[var(--color-primary)] font-medium"
           >
-            <ChatBubbleLeftRightIcon className="w-4 h-4" /> 내 채팅 목록
+            더보기 <ChevronRightIcon className="w-4 h-4 ml-1" />
           </Link>
         </div>
+        
         <div className="bg-white rounded-xl border border-[var(--color-border)] p-6">
           <div className="space-y-4">
             {communityPostList.length > 0 ? (
@@ -165,19 +165,19 @@ export default function HomePage() {
                 <Link 
                   href={`/community/${post.id}`} 
                   key={post.id} 
-                  className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0 hover:bg-gray-50"
+                  className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3"></div>
-                    <span className="line-clamp-1">{post.title}</span>
+                  <div className="flex items-center overflow-hidden">
+                    <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3 shrink-0"></div>
+                    <span className="line-clamp-1 text-[var(--color-text-primary)]">{post.title}</span>
                   </div>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-gray-400 shrink-0 ml-4">
                     {new Date(post.createdAt).toLocaleDateString()}
                   </span>
                 </Link>
               ))
             ) : (
-              <p className="text-center text-gray-500">등록된 게시글이 없습니다.</p>
+              <p className="text-center text-gray-500 py-4">등록된 게시글이 없습니다.</p>
             )}
           </div>
         </div>
