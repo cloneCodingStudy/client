@@ -5,11 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 /**
  * 대여 게시글 목록 조회
  */
-export async function getProducts(
-  page: number = 0, 
-  size: number = 20,
-  position?: { lat: number; lng: number; distance: number }
-) {
+export async function getProducts(page = 0, size = 20, position?: any) {
   try {
     let url = `${API_URL}/products?page=${page}&size=${size}`;
     if (position) {
@@ -17,7 +13,7 @@ export async function getProducts(
     }
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error("상품 목록을 불러오지 못했습니다.");
+    if (!res.ok) throw new Error("상품 목록 로드 실패");
     const data = await res.json();
 
     const mapped: ProductListItem[] = data.content.map((item: any) => ({
@@ -26,12 +22,15 @@ export async function getProducts(
       price: item.price,
       isRented: item.status,
       createdAt: item.registerTime,
+      image: item.imageUrl, 
+      rating: item.rating || 0,
+      reviewsCount: item.reviewsCount || 0,
       seller: { id: 0, nickname: item.nickname }, 
     }));
 
     return { ...data, content: mapped };
   } catch (err) {
-    console.error("[getProducts]", err);
+    console.error(err);
     return null;
   }
 }

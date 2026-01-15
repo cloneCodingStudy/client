@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast"; 
+import toast from "react-hot-toast";
 import useUserStore from "@/store/useUserStore";
 import {
   HomeIcon,
@@ -13,16 +14,26 @@ import {
   TruckIcon,
   WrenchScrewdriverIcon,
   ChevronRightIcon,
-  StarIcon,
   TvIcon,
   MapPinIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import LocationSection from "@/components/LocationSection";
 
+// API 함수 임포트
+import { getProducts } from "@/data/actions/products.api"; 
+import { getCommunityPosts } from "@/data/actions/community.api";
+import { ProductListItem } from "@/types/product";
+import { CommunityPost } from "@/types/community";
+
 export default function HomePage() {
   const router = useRouter();
-  const { user } = useUserStore(); 
+  const { user } = useUserStore();
+
+  // 상태 관리
+  const [productList, setProductList] = useState<ProductListItem[]>([]);
+  const [communityPostList, setCommunityPostList] = useState<CommunityPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
     { icon: HomeIcon, label: "생활용품", href: "/category/lifestyle" },
@@ -31,25 +42,37 @@ export default function HomePage() {
     { icon: TicketIcon, label: "레저/취미", href: "/category/leisure" },
     { icon: HeartIcon, label: "반려동물", href: "/category/pet" },
     { icon: TruckIcon, label: "자동차/정비", href: "/category/car" },
-    { icon: TvIcon, label: "전자기기", href: "/category/car" },
-    { icon: WrenchScrewdriverIcon, label: "수리/공구/인테리어", href: "/category/repair" },
+    { icon: TvIcon, label: "전자기기", href: "/category/electronics" },
+    { icon: WrenchScrewdriverIcon, label: "수리/공구", href: "/category/repair" },
   ];
 
-  const productList = [
-    { id: 1, title: "아파트 베란다 인테리어 공구 빌려주세요", location: "성북구 성북동", price: "50,000원", rating: 4.8, reviews: 12, tags: ["인테리어", "베란다"], image: "/images/공구.jpg" },
-    { id: 2, title: "아파트 베란다 인테리어 공구 빌려주세요", location: "성북구 동선동", price: "30,000원", rating: 4.9, reviews: 24, tags: ["인테리어", "베란다"], image: "/images/공구.jpg" },
-  ];
+  // 데이터 페칭
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // 메인 페이지이므로 0페이지, 4개씩만 가져오도록 설정
+        const [products, community] = await Promise.all([
+          getProducts(0, 4),
+          getCommunityPosts(0, 5)
+        ]);
 
-  const communityPostList = [
-    { date: "2024-03-15", title: "길 잃은 고양이 찾아드려요" },
-    { date: "2024-03-14", title: "길 잃은 고양이 보셨나요?ㅜㅜ" },
-  ];
+        if (products) setProductList(products.content);
+        if (community) setCommunityPostList(community.content);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleChatClick = (e: React.MouseEvent) => {
     const token = localStorage.getItem("accessToken");
-    
     if (!user || !token) {
-      e.preventDefault(); 
+      e.preventDefault();
       toast.error("로그인이 필요한 서비스입니다.");
       router.push("/login?returnUrl=/chat");
     }
@@ -62,7 +85,7 @@ export default function HomePage() {
       {/* 플로팅 채팅 버튼 */}
       <Link
         href="/chat"
-        onClick={handleChatClick} // 클릭 시 로그인 체크
+        onClick={handleChatClick}
         className="fixed bottom-10 right-10 z-50 flex items-center gap-2 px-6 py-4 bg-primary-purple text-white rounded-full shadow-2xl hover:scale-105 transition-all duration-300 shadow-purple-200"
       >
         <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
@@ -71,8 +94,7 @@ export default function HomePage() {
 
       {/* Category Section */}
       <section>
-        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">실시간 인기 검색어</h2>
-        <p className="text-[var(--color-text-secondary)] mb-8">#자전거 #캠핑의자 #유아용품</p>
+        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">카테고리별 탐색</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {categories.map((category, index) => (
             <Link key={index} href={category.href} className="flex flex-col items-center p-6 bg-white rounded-xl border border-[var(--color-border)] hover:shadow-md hover:bg-[#FAFAFF] transition-all group">
@@ -93,20 +115,35 @@ export default function HomePage() {
             더보기 <ChevronRightIcon className="w-4 h-4 ml-1" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {productList.map((product) => (
-            <div key={product.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="relative h-40 bg-gray-200">
-                <Image src={product.image} alt={product.title} fill className="object-cover" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-semibold mb-2 line-clamp-2">{product.title}</h3>
-                <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2"><MapPinIcon className="w-4 h-4 mr-1" />{product.location}</div>
-                <div className="flex items-center justify-between font-bold text-[var(--color-primary)]">{product.price}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center py-10">로딩 중...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {productList.map((product) => (
+              <Link href={`/products/${product.id}`} key={product.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="relative h-40 bg-gray-200">
+                  <Image 
+                    src={product.image || "/images/공구.jpg"} 
+                    alt={product.title} 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold mb-2 line-clamp-1">{product.title}</h3>
+                  <div className="flex items-center text-sm text-[var(--color-text-secondary)] mb-2">
+                    <MapPinIcon className="w-4 h-4 mr-1" />
+                    {product.seller?.nickname || "익명"}
+                  </div>
+                  <div className="flex items-center justify-between font-bold text-[var(--color-primary)]">
+                    {product.price.toLocaleString()}원
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Community Section */}
@@ -123,15 +160,25 @@ export default function HomePage() {
         </div>
         <div className="bg-white rounded-xl border border-[var(--color-border)] p-6">
           <div className="space-y-4">
-            {communityPostList.map((post, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3"></div>
-                  <span>{post.title}</span>
-                </div>
-                <span className="text-sm text-gray-400">{post.date}</span>
-              </div>
-            ))}
+            {communityPostList.length > 0 ? (
+              communityPostList.map((post) => (
+                <Link 
+                  href={`/community/${post.id}`} 
+                  key={post.id} 
+                  className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-b-0 hover:bg-gray-50"
+                >
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-[var(--color-success)] rounded-full mr-3"></div>
+                    <span className="line-clamp-1">{post.title}</span>
+                  </div>
+                  <span className="text-sm text-gray-400">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">등록된 게시글이 없습니다.</p>
+            )}
           </div>
         </div>
       </section>

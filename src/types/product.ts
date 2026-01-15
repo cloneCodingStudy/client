@@ -31,4 +31,7 @@ export type ProductListItem = {
   isRented: boolean;
   createdAt: string;
   seller: SellerInfo;
+  image: string | null;
+  rating: number;   
+  reviewsCount: number;
 };
