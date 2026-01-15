@@ -21,7 +21,7 @@ import {
 import LocationSection from "@/components/LocationSection";
 
 // API 함수 임포트
-import { getProducts } from "@/data/actions/products.api"; 
+import { getPopularProducts } from "@/data/actions/products.api"; 
 import { getCommunityPosts } from "@/data/actions/community.api";
 import { ProductListItem } from "@/types/product";
 import { CommunityPost } from "@/types/community";
@@ -53,11 +53,11 @@ export default function HomePage() {
       try {
         // 메인 페이지이므로 0페이지, 4개씩만 가져오도록 설정
         const [products, community] = await Promise.all([
-          getProducts(0, 4),
-          getCommunityPosts(0, 5)
+          getPopularProducts(0, 4),
+          getCommunityPosts(0, 4)
         ]);
 
-        if (products) setProductList(products.content);
+        if (products) setProductList(products.content.slice(0, 4));
         if (community) setCommunityPostList(community.content);
       } catch (error) {
         console.error("데이터 로드 실패:", error);

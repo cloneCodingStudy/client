@@ -264,3 +264,30 @@ export async function analyzeProductImage(imageUrl: string, signal?: AbortSignal
     return null;
   }
 }
+
+export async function getPopularProducts(page = 0, size = 4) {
+  try {
+    const res = await fetch(`${API_URL}/products/popular?page=${page}&size=${size}`);
+    if (!res.ok) throw new Error("인기 상품 목록을 불러오지 못했습니다.");
+    
+    const result = await res.json();
+    const data = result.data;
+
+    const mapped: ProductListItem[] = data.content.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      isRented: item.status,
+      createdAt: item.registerTime,
+      image: item.imageUrl || "/images/공구.jpg",
+      rating: item.rating || 0,
+      reviewsCount: item.reviewsCount || 0,
+      seller: { id: 0, nickname: item.nickname },
+    }));
+
+    return { ...data, content: mapped };
+  } catch (err) {
+    console.error("[getPopularProducts]", err);
+    return null;
+  }
+}
