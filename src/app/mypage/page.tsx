@@ -1,9 +1,46 @@
 "use client";
-
+import { getMyPageSummary } from "@/data/actions/mypage.api";
 import useUserStore from "@/store/useUserStore";
+import { useEffect, useState } from "react";
+import { MyPageSummary} from "@/types/mypage";
+
+const formatCurrency = (amount?: number) => {
+  if (amount === undefined || amount === null) return "-";
+  return `₩${amount.toLocaleString()}`;
+};
+
 
 export default function MyPage() {
   const { user } = useUserStore();
+  const [summary, setSummary] = useState<MyPageSummary | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSummary = async () => {
+      setIsLoading(true);
+      const data = await getMyPageSummary();
+      if (isMounted && data?.data) {
+        setSummary({
+          grade: data.data.grade,
+          nextGradeRemaining: data.data.nextGradeRemaining,
+          rentedCount: data.data.rentedCount,
+          lentCount: data.data.lentCount,
+          settlementAmount: data.data.settlementAmount,
+        });
+      }
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div>
