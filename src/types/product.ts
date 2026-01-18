@@ -32,7 +32,7 @@ export type ProductListItem = {
   isRented: boolean;
   createdAt: string;
   seller: SellerInfo;
-  image: string | null;
+  imageUrl: string | null;
   rating: number;   
   reviewsCount: number;
 };

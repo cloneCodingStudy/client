@@ -47,6 +47,10 @@ export async function getMyProducts(page: number = 0, size: number = 10) {
       price: item.price,
       isRented: item.status,
       createdAt: item.registerTime, 
+      imageUrl: item.imageUrl,
+      rating: item.rating,
+      reviewsCount: item.reviewsCount,
+      
       seller: {
         id: 0, 
         nickname: item.nickname, 
@@ -81,13 +85,21 @@ export async function getMyInteractions(type: 'likes' | 'bookmarks', page: numbe
     
     const data = await res.json();
     
-    const mappedContent = data.data.content.map((item: any) => ({
+   const mappedContent: ProductListItem[] = data.data.content.map((item: any) => ({
       id: item.id,
       title: item.title,
       price: item.price,
       isRented: item.status,
-      createdAt: item.registerTime,
-      seller: { id: 0, nickname: item.nickname }
+      createdAt: item.registerTime, 
+      imageUrl: item.imageUrl,
+      rating: item.rating,
+      reviewsCount: item.reviewsCount,
+      
+      seller: {
+        id: 0, 
+        nickname: item.nickname, 
+        email: ""
+      }
     }));
 
     return { ...data.data, content: mappedContent };
@@ -121,6 +133,10 @@ export async function getMyOrders(page: number = 0, size: number = 10) {
       price: item.price,
       isRented: item.status,
       createdAt: item.registerTime, 
+      imageUrl: item.imageUrl,
+      rating: item.rating,
+      reviewsCount: item.reviewsCount,
+      
       seller: {
         id: 0, 
         nickname: item.nickname, 
