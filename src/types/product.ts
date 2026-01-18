@@ -15,7 +15,7 @@ export type Product = {
   longitude?: number;     
   image: string;
   isRented: boolean;
-  rating: number;
+  rating?: number;
   reviews: number;
   seller: SellerInfo;
   likeCount: number;
