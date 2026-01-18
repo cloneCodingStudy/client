@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import ProductCard from "@/components/ProductCard";
 import { ProductListItem } from "@/types/product";
-import { getMyInteractions } from "@/data/actions/user.api";
+import { getMyInteractions } from "@/data/actions/mypage.api";
 
 type TabType = "likes" | "bookmarks";
 

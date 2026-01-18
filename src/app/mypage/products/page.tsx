@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 import { ProductListItem } from "@/types/product";
 import { deleteProduct } from "@/data/actions/products.api";
-import { getMyProducts } from "@/data/actions/user.api";
+import { getMyProducts } from "@/data/actions/mypage.api";
 
 export default function MyProductsPage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
