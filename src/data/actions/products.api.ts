@@ -14,23 +14,29 @@ export async function getProducts(page = 0, size = 20, position?: any) {
 
     const res = await fetch(url);
     if (!res.ok) throw new Error("상품 목록 로드 실패");
-    const data = await res.json();
 
-    const mapped: ProductListItem[] = data.content.map((item: any) => ({
+    const result = await res.json();
+    const pageData = result.data;
+
+    if (!pageData || !Array.isArray(pageData.content)) {
+      return { content: [], totalPages: 0 };
+    }
+
+    const mapped: ProductListItem[] = pageData.content.map((item: any) => ({
       id: item.id,
       title: item.title,
       price: item.price,
       isRented: item.status,
-      createdAt: item.registerTime,
-      image: item.imageUrl, 
+      createdAt: item.createdAt || item.registerTime,
+      image: item.imageUrl || "/images/공구.jpg", 
       rating: item.rating || 0,
       reviewsCount: item.reviewsCount || 0,
       seller: { id: 0, nickname: item.nickname }, 
     }));
 
-    return { ...data, content: mapped };
+    return { ...pageData, content: mapped };
   } catch (err) {
-    console.error(err);
+    console.error("[getProducts]", err);
     return null;
   }
 }
@@ -38,11 +44,8 @@ export async function getProducts(page = 0, size = 20, position?: any) {
 /**
  * 대여 게시글 상세 조회
  */
-// src/data/actions/products.api.ts
-
 export async function getProduct(postId: number): Promise<Product | null> {
   try {
-    // 1. 토큰 가져오기
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
     const res = await fetch(`${API_URL}/products/${postId}`, {
@@ -54,7 +57,11 @@ export async function getProduct(postId: number): Promise<Product | null> {
     });
 
     if (!res.ok) throw new Error("상품 상세 조회에 실패했습니다.");
-    const data = await res.json();
+    
+    const result = await res.json();
+    const data = result.data; 
+
+    if (!data) return null;
 
     const images = data.imageUrls?.map((img: any) => img.imageUrl) || [];
 
@@ -66,7 +73,7 @@ export async function getProduct(postId: number): Promise<Product | null> {
       location: data.location,
       latitude: data.latitude,
       longitude: data.longitude,
-      image: images[0] ?? "/images/공구.jpg",
+      image: images[0] ?? data.imageUrl ?? "/images/공구.jpg",
       isRented: data.status,
       rating: data.rating || 0,
       likeCount: data.likeCount || 0,
@@ -74,7 +81,7 @@ export async function getProduct(postId: number): Promise<Product | null> {
       reviews: data.reviewsCount || 0,
       seller: {
         id: data.seller?.id || 0,
-        nickname: data.username || data.seller?.nickname,
+        nickname: data.username || data.seller?.nickname || "알 수 없음",
         email: data.seller?.email || "",
       },
       category: data.category,
@@ -106,7 +113,7 @@ export async function createProduct(data: any): Promise<number | null> {
 
     if (!res.ok) throw new Error("상품 등록에 실패했습니다.");
     const result = await res.json();
-    return result.data; 
+    return result.data;
   } catch (err) {
     console.error("[createProduct]", err);
     return null;
@@ -201,7 +208,9 @@ export async function toggleProductLike(postId: number): Promise<number | null> 
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error("찜하기 처리에 실패했습니다.");
-    return await res.json(); 
+    
+    const result = await res.json();
+    return result.data; 
   } catch (err) {
     console.error("[toggleProductLike]", err);
     return null;
@@ -219,13 +228,18 @@ export async function toggleProductBookmark(postId: number): Promise<string | nu
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error("북마크 처리에 실패했습니다.");
-    return await res.text(); 
+    
+    const result = await res.json();
+    return result.data; 
   } catch (err) {
     console.error("[toggleProductBookmark]", err);
     return null;
   }
 }
 
+/**
+ * AI 이미지 분석
+ */
 export async function analyzeProductImage(imageUrl: string, signal?: AbortSignal) {
   try {
     const accessToken = localStorage.getItem("accessToken");
@@ -245,15 +259,13 @@ export async function analyzeProductImage(imageUrl: string, signal?: AbortSignal
     }
 
     const result = await res.json();
-    console.log("AI 분석 결과 원본:", result);
+    const data = result.data;
 
-    if (result && result.data) {
+    if (data) {
       try {
-        return typeof result.data === "string" 
-          ? JSON.parse(result.data) 
-          : result.data;
+        return typeof data === "string" ? JSON.parse(data) : data;
       } catch (parseError) {
-        console.error("JSON 파싱 실패:", result.data);
+        console.error("JSON 파싱 실패:", data);
         return null;
       }
     }
@@ -266,27 +278,34 @@ export async function analyzeProductImage(imageUrl: string, signal?: AbortSignal
   }
 }
 
+/**
+ * 인기 상품 목록 조회
+ */
 export async function getPopularProducts(page = 0, size = 4) {
   try {
     const res = await fetch(`${API_URL}/products/popular?page=${page}&size=${size}`);
     if (!res.ok) throw new Error("인기 상품 목록을 불러오지 못했습니다.");
     
     const result = await res.json();
-    const data = result.data;
+    const pageData = result.data;
 
-    const mapped: ProductListItem[] = data.content.map((item: any) => ({
+    if (!pageData || !Array.isArray(pageData.content)) {
+      return { content: [], totalPages: 0 };
+    }
+
+    const mapped: ProductListItem[] = pageData.content.map((item: any) => ({
       id: item.id,
       title: item.title,
       price: item.price,
       isRented: item.status,
-      createdAt: item.registerTime,
+      createdAt: item.createdAt || item.registerTime,
       image: item.imageUrl || "/images/공구.jpg",
       rating: item.rating || 0,
       reviewsCount: item.reviewsCount || 0,
       seller: { id: 0, nickname: item.nickname },
     }));
 
-    return { ...data, content: mapped };
+    return { ...pageData, content: mapped };
   } catch (err) {
     console.error("[getPopularProducts]", err);
     return null;
