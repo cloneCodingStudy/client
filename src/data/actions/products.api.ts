@@ -63,7 +63,7 @@ export async function getProduct(postId: number): Promise<Product | null> {
 
     if (!data) return null;
 
-    const images = data.imageUrls?.map((img: any) => img.imageUrl) || [];
+    const images = data.imageUrls || [];
 
     const mapped: Product = {
       id: data.id,
@@ -73,7 +73,7 @@ export async function getProduct(postId: number): Promise<Product | null> {
       location: data.location,
       latitude: data.latitude,
       longitude: data.longitude,
-      image: images[0] ?? data.imageUrl ?? "/images/공구.jpg",
+      image: images[0] || "/images/공구.jpg",
       isRented: data.status,
       rating: data.rating || 0,
       likeCount: data.likeCount || 0,
