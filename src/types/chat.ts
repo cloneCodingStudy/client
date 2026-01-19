@@ -9,8 +9,10 @@ export interface ChatMessage {
 
 export interface MessageResponse {
   messageId: number;
+  roomId: number;
   content: string;
-  senderName: string;
+  senderEmail: string;
+  senderNickname: string;
   sendTime: string;
 }
 

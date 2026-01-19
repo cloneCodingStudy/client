@@ -11,22 +11,26 @@ export default function ChatListPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
-        const response = await axios.get(`${apiUrl}/chat/rooms`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setRooms(response.data);
-      } catch (error) {
-        console.error("채팅방 목록을 불러오는데 실패했습니다.", error);
-      } finally {
-        setIsLoading(false);
+  const fetchRooms = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+      
+      const response = await axios.get(`${apiUrl}/chat/rooms`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data && response.data.data) {
+        setRooms(response.data.data);
       }
-    };
-    fetchRooms();
-  }, []);
+    } catch (error) {
+      console.error("채팅방 목록을 불러오는데 실패했습니다.", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  fetchRooms();
+}, []);
 
   return (
     <div className="max-w-4xl mx-auto mt-8 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm min-h-[600px] flex flex-col">

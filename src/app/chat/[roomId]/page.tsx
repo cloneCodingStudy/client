@@ -42,21 +42,29 @@ export default function ChatDetailPage() {
 
   // 3. 과거 대화 내역 로드
   useEffect(() => {
-    if (!roomId || !myInfo) return;
-    const fetchHistory = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/chat/rooms/${roomId}/messages`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = response.data?.content || response.data;
-        if (Array.isArray(data)) {
-            setHistory([...data].reverse());
-        }
-      } catch (e) { console.error("히스토리 로드 실패:", e); }
-    };
-    fetchHistory();
-  }, [roomId, myInfo]);
+  if (!roomId || !myInfo) return;
+  
+  const fetchHistory = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/chat/rooms/${roomId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const apiResponse = response.data;
+      const sliceData = apiResponse.data; 
+
+      if (sliceData && Array.isArray(sliceData.content)) {
+        setHistory([...sliceData.content].reverse());
+      } else if (Array.isArray(sliceData)) {
+        setHistory([...sliceData].reverse());
+      }
+    } catch (e) { 
+      console.error("히스토리 로드 실패:", e); 
+    }
+  };
+  fetchHistory();
+}, [roomId, myInfo]);
 
   // 4. 웹소켓 실시간 메시지 훅
   const { messages: realtimeMessages, send } = useChat(roomId, myInfo?.email || "", opponentEmail);
@@ -89,7 +97,10 @@ export default function ChatDetailPage() {
   };
 
   const checkIsMe = (senderEmail: string | undefined) => {
+    console.log("비교 대상:", senderEmail, "내 이메일:", myInfo?.email);
+
     if (!senderEmail || !myInfo?.email) return false;
+    
     return senderEmail.trim().toLowerCase() === myInfo.email.trim().toLowerCase();
   };
 
@@ -128,7 +139,7 @@ export default function ChatDetailPage() {
           <MessageBubble 
             key={msg.messageId || `hist-${idx}`} 
             content={msg.content} 
-            isMe={checkIsMe(msg.senderName)}
+            isMe={checkIsMe(msg.senderEmail)}
             time={msg.sendTime} 
           />
         ))}
@@ -136,7 +147,7 @@ export default function ChatDetailPage() {
           <MessageBubble 
             key={`real-${idx}`} 
             content={msg.content} 
-            isMe={String(msg.sender).trim().toLowerCase() === String(myInfo?.email).trim().toLowerCase()} 
+            isMe={String(msg.senderEmail).trim().toLowerCase() === String(myInfo?.email).trim().toLowerCase()} 
             time={msg.time} 
           />
         ))}
