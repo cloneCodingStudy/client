@@ -10,7 +10,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const displayImage = product.image || "/images/default-thumbnail.jpg";
+  const displayImage = product.imageUrl || "/images/default-thumbnail.jpg";
 
   return (
     <Link

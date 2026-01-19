@@ -103,7 +103,7 @@ export default function MyProductsPage() {
               {/* 이미지 영역 */}
               <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden">
                 <Image 
-                  src={"/images/공구.jpg"} 
+                  src={item.imageUrl ? item.imageUrl : "/images/공구.jpg"}
                   alt={item.title} 
                   fill 
                   className="object-cover group-hover:scale-105 transition-transform duration-500" 
