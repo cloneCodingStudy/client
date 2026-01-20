@@ -31,6 +31,9 @@ export default function MyPageLayout({ children }: { children: React.ReactNode }
           <Link href="/mypage/grade" className="hover:text-primary-purple">
             내 회원 등급
           </Link>
+          <Link href="/mypage/settlements" className="hover:text-primary-purple">
+            정산하기
+          </Link>
           <Link href="/mypage/quit" className="hover:text-primary-purple">
             회원 탈퇴
           </Link>
