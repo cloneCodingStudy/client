@@ -37,3 +37,31 @@ export async function createOrder(
     return null;
   }
 }
+type ReturnRentalResponse = {
+  message: string;
+};
+
+export async function returnRental(
+  orderId: number,
+): Promise<ReturnRentalResponse | null> {
+  try {
+    const token = localStorage.getItem("accessToken");
+    const res = await fetch(`${API_URL}/products/return/${orderId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("반납 요청에 실패했습니다.");
+    }
+
+    const result = await res.json();
+    return result.data ?? result;
+  } catch (error) {
+    console.error("[returnRental]", error);
+    return null;
+  }
+
+}

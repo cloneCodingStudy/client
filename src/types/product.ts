@@ -35,4 +35,5 @@ export type ProductListItem = {
   imageUrl: string | null;
   rating: number;   
   reviewsCount: number;
+  orderId?: number;
 };

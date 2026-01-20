@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 
 import { ProductListItem } from "@/types/product";
 import { getMyOrders } from "@/data/actions/mypage.api";
+import { returnRental } from "@/data/actions/orders.api";
 
 export default function MyOrdersPage() {
   const [products, setProducts] = useState<ProductListItem[]>([]);
@@ -31,18 +32,25 @@ export default function MyOrdersPage() {
     fetchInitialData();
   }, []);
 
-  const handleReturn = (id: number) => {
-    const item = products.find((p) => p.id === id);
+  const handleReturn = async (orderId: number) => {
+    const item = products.find((p) => p.orderId === orderId);
     if (!item) return;
 
     if (!item.isRented) {
       toast.error("대여 중인 상품만 반납할 수 있습니다.");
       return;
     }
+    if (!confirm("진짜 반납하시겠습니까?")) return;
+
+    const result = await returnRental(orderId);
+    if (!result) {
+      toast.error("반납 요청에 실패했습니다.");
+      return;
+    }
 
     setProducts((prev) =>
       prev.map((product) =>
-        product.id === id ? { ...product, isRented: false } : product
+        product.orderId === orderId ? { ...product, isRented: false } : product
       )
     );
     toast.success("반납 요청이 접수되었습니다.");
@@ -107,6 +115,7 @@ export default function MyOrdersPage() {
                   {item.price.toLocaleString()}원
                 </div>
               </div>
+              <div className="text-xs text-gray-400">orderId: {item.orderId ?? "없음"}</div>
 
               <div className="pt-4 border-t border-gray-50">
                 <div className="flex justify-between items-center text-[11px] text-gray-400 mb-4">
@@ -117,7 +126,7 @@ export default function MyOrdersPage() {
                 </div>
 
                 <button
-                  onClick={() => handleReturn(item.id)}
+                  onClick={() => handleReturn(item.orderId!)} 
                   disabled={!item.isRented}
                   className={`w-full py-3 text-sm font-bold rounded-xl transition-all ${
                     item.isRented

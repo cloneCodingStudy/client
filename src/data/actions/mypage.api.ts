@@ -136,6 +136,7 @@ export async function getMyOrders(page: number = 0, size: number = 10) {
       imageUrl: item.imageUrl,
       rating: item.rating,
       reviewsCount: item.reviewsCount,
+      orderId: item.orderId,
       
       seller: {
         id: 0, 
