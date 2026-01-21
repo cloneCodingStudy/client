@@ -44,7 +44,8 @@ export async function getCommunityPost(postId: number): Promise<CommunityPost | 
 
     if (!res.ok) throw new Error("게시글 상세 조회에 실패했습니다.");
 
-    return await res.json();
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[getCommunityPost]", err);
     return null;
@@ -76,7 +77,8 @@ export async function createCommunityPost(data: {
 
     if (!res.ok) throw new Error("게시글 작성에 실패했습니다.");
 
-    return await res.json();
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[createCommunityPost]", err);
     return null;
@@ -107,7 +109,8 @@ export async function updateCommunityPost(
       body: JSON.stringify(data),
     });
 
-    return res.ok;
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[updateCommunityPost]", err);
     return false;
@@ -128,7 +131,8 @@ export async function deleteCommunityPost(postId: number): Promise<boolean> {
       },
     });
 
-    return res.ok;
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[deleteCommunityPost]", err);
     return false;
@@ -149,7 +153,8 @@ export async function searchCommunityPosts(keyword: string): Promise<CommunityPo
 
     if (!res.ok) throw new Error("검색에 실패했습니다.");
 
-    return await res.json();
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[searchCommunityPosts]", err);
     return null;
@@ -165,7 +170,8 @@ export async function getPresignedUrls(fileNames: string[]): Promise<string[] | 
     });
 
     if (!res.ok) throw new Error("URL 생성 실패");
-    return await res.json(); 
+    const response = await res.json();
+    return response.data;
   } catch (err) {
     console.error("[getPresignedUrls]", err);
     return null;

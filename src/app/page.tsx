@@ -124,7 +124,7 @@ export default function HomePage() {
               <Link href={`/products/${product.id}`} key={product.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative h-40 bg-gray-200">
                   <Image 
-                    src={product.image || "/images/공구.jpg"} 
+                    src={product.imageUrl || "/images/공구.jpg"} 
                     alt={product.title} 
                     fill 
                     className="object-cover" 

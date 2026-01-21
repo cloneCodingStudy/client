@@ -27,14 +27,18 @@ export async function getProducts(page = 0, size = 20, position?: any) {
       title: item.title,
       price: item.price,
       isRented: item.status,
-      createdAt: item.createdAt || item.registerTime,
-      image: item.imageUrl || "/images/공구.jpg", 
+      createdAt: item.registerTime, 
+      imageUrl: item.imageUrl || "/images/공구.jpg", 
       rating: item.rating || 0,
       reviewsCount: item.reviewsCount || 0,
       seller: { id: 0, nickname: item.nickname }, 
     }));
 
-    return { ...pageData, content: mapped };
+    return {
+      content: mapped,
+      totalPages: pageData.page?.totalPages || 0,
+      totalElements: pageData.page?.totalElements || 0
+    };
   } catch (err) {
     console.error("[getProducts]", err);
     return null;
@@ -298,14 +302,18 @@ export async function getPopularProducts(page = 0, size = 4) {
       title: item.title,
       price: item.price,
       isRented: item.status,
-      createdAt: item.createdAt || item.registerTime,
-      image: item.imageUrl || "/images/공구.jpg",
+      createdAt: item.registerTime,
+      imageUrl: item.imageUrl || "/images/공구.jpg", 
       rating: item.rating || 0,
       reviewsCount: item.reviewsCount || 0,
       seller: { id: 0, nickname: item.nickname },
     }));
 
-    return { ...pageData, content: mapped };
+    return {
+      content: mapped,
+      totalPages: pageData.page?.totalPages || 0,
+      totalElements: pageData.page?.totalElements || 0
+    };
   } catch (err) {
     console.error("[getPopularProducts]", err);
     return null;
