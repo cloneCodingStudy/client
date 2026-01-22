@@ -13,7 +13,7 @@ export interface CommunityPost {
   category: CommunityCategory;
   username: string;
   thumbnailUrl?: string;
-  imageUrls?: CommunityImage[];
+  imageUrls?: string[];
   comments?: CommunityComment[];
 }
 
@@ -28,11 +28,6 @@ export interface CommunityUser {
   email: string;
 }
 
-//커뮤니티 첨부 이미지
-export interface CommunityImage {
-  id: number;
-  imageUrl: string;
-}
 
 //커뮤니티 댓글
 export interface CommunityComment {

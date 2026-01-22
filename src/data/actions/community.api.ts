@@ -202,7 +202,7 @@ export async function uploadFileToS3(presignedUrl: string, file: File) {
 export async function createCommunityComment(postId: number, comment: string): Promise<boolean> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/community/comment/${postId}`, {
+    const res = await fetch(`${API_URL}/community/${postId}/comments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

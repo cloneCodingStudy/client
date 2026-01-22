@@ -23,6 +23,7 @@ export default function CommunityDetailPage() {
     if (!id) return;
     setLoading(true);
     const data = await getCommunityPost(Number(id));
+    console.log(data);
     setPost(data);
     setLoading(false);
   };
@@ -91,8 +92,8 @@ export default function CommunityDetailPage() {
         {post.imageUrls && post.imageUrls.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-10">
             {post.imageUrls.map((img) => (
-              <div key={img.id} className="relative w-full h-56 rounded-lg overflow-hidden">
-                <Image src={img.imageUrl} alt="첨부 이미지" fill unoptimized className="object-contain" />
+              <div key={img} className="relative w-full h-56 rounded-lg overflow-hidden">
+                <Image src={img} alt="첨부 이미지" fill unoptimized className="object-contain" />
               </div>
             ))}
           </div>
