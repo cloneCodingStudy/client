@@ -22,7 +22,7 @@ export async function getCommunityPosts(
       params.append("distance", position.distance.toString());
     }
 
-    const res = await fetch(`${API_URL}/community/posts?${params.toString()}`);
+    const res = await fetch(`${API_URL}/community-posts/posts?${params.toString()}`);
     if (!res.ok) throw new Error("게시글 목록 로드 실패");
 
     return await res.json(); 
@@ -38,7 +38,7 @@ export async function getCommunityPosts(
  */
 export async function getCommunityPost(postId: number): Promise<CommunityPost | null> {
   try {
-    const res = await fetch(`${API_URL}/community/${postId}`, {
+    const res = await fetch(`${API_URL}/community-posts/${postId}`, {
       method: "GET",
     });
 
@@ -66,7 +66,7 @@ export async function createCommunityPost(data: {
 }): Promise<CommunityPost | null> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/community`, {
+    const res = await fetch(`${API_URL}/community-posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export async function updateCommunityPost(
 ): Promise<boolean> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/community/${postId}`, {
+    const res = await fetch(`${API_URL}/community-posts/${postId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export async function updateCommunityPost(
 export async function deleteCommunityPost(postId: number): Promise<boolean> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/community/${postId}`, {
+    const res = await fetch(`${API_URL}/community-posts/${postId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -145,7 +145,7 @@ export async function deleteCommunityPost(postId: number): Promise<boolean> {
 export async function searchCommunityPosts(keyword: string): Promise<CommunityPost[] | null> {
   try {
     const res = await fetch(
-      `${API_URL}/community/posts/search?keyword=${encodeURIComponent(keyword)}`,
+      `${API_URL}/community-posts/posts/search?keyword=${encodeURIComponent(keyword)}`,
       {
         method: "GET",
       }
@@ -163,7 +163,7 @@ export async function searchCommunityPosts(keyword: string): Promise<CommunityPo
 
 export async function getPresignedUrls(fileNames: string[]): Promise<string[] | null> {
   try {
-    const res = await fetch(`${API_URL}/community/presigned-url`, {
+    const res = await fetch(`${API_URL}/community-posts/presigned-url`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fileNames }), 
@@ -202,7 +202,7 @@ export async function uploadFileToS3(presignedUrl: string, file: File) {
 export async function createCommunityComment(postId: number, comment: string): Promise<boolean> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/community/${postId}/comments`, {
+    const res = await fetch(`${API_URL}/community-posts/${postId}/comments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

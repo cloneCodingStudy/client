@@ -46,7 +46,7 @@ export async function loginUser(credentials: { userId: string; password: string 
  * 회원가입 요청
  */
 export async function signupUser(payload: any) {
-  const res = await fetch(`${API_URL}/user/sign-up`, {
+  const res = await fetch(`${API_URL}/users/sign-up`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -68,7 +68,7 @@ export async function updateUser(data: {
 }) {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-    const res = await fetch(`${API_URL}/user/profile`, {
+    const res = await fetch(`${API_URL}/users/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -91,7 +91,7 @@ export async function updateUser(data: {
 export async function deleteUser() {
   try {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-    const res = await fetch(`${API_URL}/user/quit`, {
+    const res = await fetch(`${API_URL}/users/quit`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

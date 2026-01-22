@@ -17,7 +17,7 @@ export async function createOrder(
 ): Promise<OrderCreateResponse | null> {
   try {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch(`${API_URL}/order`, {
+    const res = await fetch(`${API_URL}/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

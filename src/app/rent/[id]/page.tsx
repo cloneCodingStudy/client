@@ -103,7 +103,7 @@ export default function RentPage() {
             if (response.success && response.imp_uid && response.merchant_uid) {
               try {
                 const token = localStorage.getItem("accessToken")
-                const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/complete` , {
+                const result = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/complete` , {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",

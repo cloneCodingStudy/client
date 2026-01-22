@@ -16,7 +16,7 @@ export default function ChatListPage() {
       const token = localStorage.getItem("accessToken");
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
       
-      const response = await axios.get(`${apiUrl}/chat/rooms`, {
+      const response = await axios.get(`${apiUrl}/chat-rooms/rooms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
