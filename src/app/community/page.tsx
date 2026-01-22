@@ -58,9 +58,11 @@ export default function CommunityPage() {
   }, [fetchPosts]);
 
   // 카테고리 필터링 (클라이언트 사이드)
-  const filteredPosts = activeTab === "ALL" 
-    ? posts 
+  const filteredPosts =
+  activeTab === "ALL" || activeTab === "HOT"
+    ? posts
     : posts.filter(post => post.category === activeTab);
+
 
   const handleWriteClick = () => {
     if (!user) {
@@ -81,6 +83,34 @@ export default function CommunityPage() {
     if (results) setPosts(results);
     setLoading(false);
   };
+  
+  const handleTabClick = async (tabValue: CommunityCategory) => {
+  setActiveTab(tabValue);
+
+  const positionParams =
+    location?.lat !== undefined && location?.lng !== undefined
+      ? { lat: location.lat, lng: location.lng, distance: 3 }
+      : undefined;
+
+  if (tabValue === "HOT") {
+    setLoading(true);
+    try {
+      const data = await getCommunityPosts(0, 10, positionParams, "HOT");
+      setPosts(data?.content ?? []);
+    } finally {
+      setLoading(false);
+    }
+    return;
+  }
+
+  if (tabValue === "ALL") {
+    fetchPosts();
+    return;
+  }
+};
+
+
+
 
   const tabs: { label: string; value: CommunityCategory }[] = [
     { label: "전체", value: "ALL" },
@@ -120,7 +150,8 @@ export default function CommunityPage() {
         {tabs.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
+            onClick={() => handleTabClick(tab.value)}
+
             className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition cursor-pointer ${
               activeTab === tab.value
                 ? "bg-purple-600 text-white border-purple-600 shadow-md"

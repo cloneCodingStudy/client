@@ -8,13 +8,18 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export async function getCommunityPosts(
   page: number = 0,
   size: number = 20,
-  position?: { lat: number; lng: number; distance: number }
+  position?: { lat: number; lng: number; distance: number },
+  tab?: "HOT" 
 ): Promise<{ content: CommunityPost[], totalPages: number, totalElements: number } | null> { 
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
     });
+    
+    if (tab === "HOT") {
+    params.append("tab", "HOT");
+  }
 
     if (position) {
       params.append("lat", position.lat.toString());
