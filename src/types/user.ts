@@ -1,11 +1,12 @@
 export interface User {
-  id: number;
-  email: string;
-  name: string;
-  nickname: string;
+  birthDate: string;
   phoneNumber: string;
-  accessToken: string;
-  refreshToken?: string;
+  email: string;
+  id: number;
+  username: string;
+  nickname: string;
+  address: string;
+  accessToken?: string;
 }
 
 export interface UserState {

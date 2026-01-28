@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { updateUser } from "@/data/actions/user.api";
 import useUserStore from "@/store/useUserStore";
-
+import { useProfile } from "@/hooks/pages/useProfile";
+``
 export default function ProfileEdit() {
   const { user } = useUserStore();
+  const { loading, updateProfile, withdraw } = useProfile();
 
   const [profile, setProfile] = useState({
     email: "",
@@ -15,110 +15,84 @@ export default function ProfileEdit() {
     phoneNumber: "",
     birthDate: "",
     address: "",
-    accessToken: "",
-    refreshToken: "",
   });
 
-  //유저 정보 가져오기
   useEffect(() => {
     if (user) {
       setProfile({
         email: user.email || "",
-        name: user.name || "",
+        name: user.username || "",
         nickname: user.nickname || "",
-        accessToken: user.accessToken || "",
-        refreshToken: user.refreshToken || "",
-        phoneNumber: "",
-        birthDate: "",
-        address: "",
+        phoneNumber: user.phoneNumber || "",
+        birthDate: user.birthDate || "",
+        address: user.address || "",
       });
     }
   }, [user]);
 
-  const handleEdit = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await updateUser(profile);
-    if (result) toast.success("회원정보가 수정되었습니다.");
-    else toast.error("수정 오류. 다시 시도해주세요.");
+    await updateProfile(profile);
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white ">
-      <h2 className="text-2xl font-bold mb-6 text-primary-purple">회원정보 수정</h2>
+    <div className="max-w-lg mx-auto bg-white py-10 px-4">
+      <h2 className="text-2xl font-bold mb-8 text-primary-purple">회원정보 수정</h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* 이메일은 변경 불가 */}
-        <div>
-          <label className="block font-medium mb-1">이메일</label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="space-y-1">
+          <label className="text-sm font-semibold text-gray-600 ml-1">이메일</label>
           <input
             name="email"
             value={profile.email}
             readOnly
-            className="w-full border rounded-lg px-4 py-3 bg-gray-100 cursor-not-allowed select-none"
+            className="w-full border-0 rounded-xl px-4 py-3.5 bg-gray-100 text-gray-500 cursor-not-allowed outline-none"
           />
         </div>
 
-        <div>
-          <label className="block font-medium mb-1">이름</label>
-          <input
-            name="name"
-            value={profile.name}
-            onChange={handleEdit}
-            className="w-full border rounded-lg px-4 py-3"
-          />
-        </div>
+        {/* 수정 가능 필드들 */}
+        {[
+          { label: "이름", name: "name" },
+          { label: "닉네임", name: "nickname" },
+          { label: "휴대폰 번호", name: "phoneNumber" },
+          { label: "생년월일", name: "birthDate", placeholder: "YYYY-MM-DD" },
+          { label: "주소", name: "address" },
+        ].map((field) => (
+          <div key={field.name} className="space-y-1">
+            <label className="text-sm font-semibold text-gray-600 ml-1">{field.label}</label>
+            <input
+              type="text"
+              name={field.name}
+              value={(profile as any)[field.name]}
+              onChange={handleChange}
+              placeholder={field.placeholder}
+              className="w-full border border-gray-200 rounded-xl px-4 py-3.5 focus:border-primary-purple focus:ring-2 focus:ring-purple-100 outline-none transition-all"
+            />
+          </div>
+        ))}
 
-        <div>
-          <label className="block font-medium mb-1">닉네임</label>
-          <input
-            name="nickname"
-            value={profile.nickname}
-            onChange={handleEdit}
-            className="w-full border rounded-lg px-4 py-3"
-          />
-        </div>
+        <div className="flex flex-col gap-3 mt-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary-purple text-white font-bold py-4 rounded-xl hover:bg-opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-purple-100"
+          >
+            {loading ? "저장 중..." : "저장하기"}
+          </button>
 
-        <div>
-          <label className="block font-medium mb-1">휴대폰 번호</label>
-          <input
-            name="phoneNumber"
-            value={profile.phoneNumber}
-            onChange={handleEdit}
-            className="w-full border rounded-lg px-4 py-3"
-          />
+          <button
+            type="button"
+            onClick={withdraw}
+            className="w-full py-4 text-sm font-medium text-gray-400 hover:text-red-500 transition-colors"
+          >
+            회원 탈퇴하기
+          </button>
         </div>
-
-        <div>
-          <label className="block font-medium mb-1">생년월일</label>
-          <input
-            name="birthDate"
-            value={profile.birthDate}
-            onChange={handleEdit}
-            className="w-full border rounded-lg px-4 py-3"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium mb-1">주소</label>
-          <input
-            name="address"
-            value={profile.address}
-            onChange={handleEdit}
-            className="w-full border rounded-lg px-4 py-3"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="mt-4 cursor-pointer bg-primary-purple text-white font-semibold py-3 rounded-lg hover:opacity-90"
-        >
-          저장하기
-        </button>
       </form>
     </div>
   );

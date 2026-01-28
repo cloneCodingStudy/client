@@ -1,4 +1,4 @@
-import FindForm from "@/components/findForm";
+import FindForm from "@/components/domain/auth/findForm";
 
 export default function FindPage() {
   return (

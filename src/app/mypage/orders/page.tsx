@@ -1,62 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-
-import { ProductListItem } from "@/types/product";
-import { getMyOrders } from "@/data/actions/mypage.api";
-import { returnRental } from "@/data/actions/orders.api";
+import { useMyPage } from "@/hooks/pages/useMyPage";
 
 export default function MyOrdersPage() {
-  const [products, setProducts] = useState<ProductListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  
+  const { list: products, loading, loadListData, handleReturnRental } = useMyPage();
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const result = await getMyOrders(0, 20);
-        if (result && result.content) {
-          setProducts(result.content);
-        }
-      } catch (error) {
-        toast.error("주문 목록을 불러오는 중 오류가 발생했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    loadListData('orders');
+  }, [loadListData]);
 
-    fetchInitialData();
-  }, []);
-
-  const handleReturn = async (orderId: number) => {
-    const item = products.find((p) => p.orderId === orderId);
-    if (!item) return;
-
-    if (!item.isRented) {
-      toast.error("대여 중인 상품만 반납할 수 있습니다.");
-      return;
-    }
+  const onReturnClick = async (orderId: number) => {
     if (!confirm("진짜 반납하시겠습니까?")) return;
-
-    const result = await returnRental(orderId);
-    if (!result) {
-      toast.error("반납 요청에 실패했습니다.");
-      return;
+    
+    const success = await handleReturnRental(orderId);
+    if (success) {
+      loadListData('orders');
     }
-
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.orderId === orderId ? { ...product, isRented: false } : product
-      )
-    );
-    toast.success("반납 요청이 접수되었습니다.");
   };
 
-  if (isLoading) {
+  if (loading && products.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-20 text-center text-gray-400">
         정보를 불러오는 중입니다...
@@ -95,7 +63,7 @@ export default function MyOrdersPage() {
             >
               <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden">
                 <Image
-                  src={item.imageUrl ? item.imageUrl : "/images/공구.jpg"}
+                  src={item.imageUrl || "/images/공구.jpg"}
                   alt={item.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -126,15 +94,15 @@ export default function MyOrdersPage() {
                 </div>
 
                 <button
-                  onClick={() => handleReturn(item.orderId!)} 
-                  disabled={!item.isRented}
+                  onClick={() => item.orderId && onReturnClick(item.orderId)} 
+                  disabled={!item.isRented || loading}
                   className={`w-full py-3 text-sm font-bold rounded-xl transition-all ${
                     item.isRented
                       ? "bg-primary-purple text-white hover:bg-opacity-90 active:scale-95"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  }`}
+                  } ${loading ? "opacity-50 cursor-wait" : ""}`}
                 >
-                  반납하기
+                  {loading ? "처리 중..." : "반납하기"}
                 </button>
               </div>
             </div>

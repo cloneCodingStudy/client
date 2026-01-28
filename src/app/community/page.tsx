@@ -1,116 +1,64 @@
 "use client";
 
-import { getCommunityPosts, searchCommunityPosts } from "@/data/actions/community.api";
-import useUserStore from "@/store/useUserStore";
-import { CommunityPost, CommunityCategory } from "@/types/community";
-import { HeartIcon, ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
-import { useRouter } from "next/navigation"; 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import toast from "react-hot-toast";
-import useLocationStore from "@/store/useLocationStore"; 
+import { HeartIcon, ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
+
+import { useCommunity } from "@/hooks/domain/useCommunity"; 
+import useUserStore from "@/store/useUserStore";
+import useLocationStore from "@/store/useLocationStore";
+import { CommunityCategory } from "@/types/community";
+import { communityService } from "@/services/communityService"; 
 
 export default function CommunityPage() {
-  const [activeTab, setActiveTab] = useState<CommunityCategory>("ALL");
-  const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [loading, setLoading] = useState(false);
-  
-  const { user } = useUserStore();
-  const { location } = useLocationStore(); 
   const router = useRouter();
+  const { user } = useUserStore();
+  const { location } = useLocationStore();
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const positionParams = (location?.lat !== undefined && location?.lng !== undefined) 
-        ? {
-            lat: location.lat,
-            lng: location.lng,
-            distance: 3
-          } 
-        : undefined;
+  const { posts, setPosts, loading, fetchPosts } = useCommunity();
+  
+  const [activeTab, setActiveTab] = useState<CommunityCategory>("ALL");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
-      const data = await getCommunityPosts(0, 20, positionParams);
-      
-      if (data && data.content) {
-        console.log("RAW thumbnailUrl:", JSON.stringify(data.content[0]?.thumbnailUrl));
-        console.log(
-          "CHAR CODES:",
-          [...(data.content[0]?.thumbnailUrl ?? "")].map(c => c.charCodeAt(0))
-        );
-        console.log("RAW object:", data.content[0]);
-        // ✅ 여기까지
-        setPosts(data.content);
-      } else {
-        setPosts([]);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("게시글을 불러오는 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  }, [location]);
+  const loadPosts = useCallback(async (tab: CommunityCategory = "ALL") => {
+    const positionParams = (location?.lat !== undefined && location?.lng !== undefined) 
+      ? { lat: location.lat, lng: location.lng, distance: 3 } 
+      : undefined;
+
+    await fetchPosts(0, 20, positionParams, tab === "HOT" ? "HOT" : undefined);
+  }, [location, fetchPosts]);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    loadPosts(activeTab);
+  }, [loadPosts, activeTab]);
 
-  // 카테고리 필터링 (클라이언트 사이드)
-  const filteredPosts =
-  activeTab === "ALL" || activeTab === "HOT"
-    ? posts
-    : posts.filter(post => post.category === activeTab);
-
+  const handleSearch = async () => {
+    if (!searchKeyword.trim()) {
+      loadPosts(activeTab);
+      return;
+    }
+    try {
+      const results = await communityService.searchPosts(searchKeyword);
+      if (results) setPosts(results); 
+    } catch (err) {
+      toast.error("검색 중 오류가 발생했습니다.");
+    }
+  };
 
   const handleWriteClick = () => {
     if (!user) {
       toast.error("로그인 후 글을 작성할 수 있습니다.");
-      router.push(`/login?returnUrl=${encodeURIComponent("/community/write")}`);
-      return;
+      return router.push(`/login?returnUrl=${encodeURIComponent("/community/write")}`);
     }
     router.push("/community/write");
   };
 
-  const handleSearch = async () => {
-    if (!searchKeyword.trim()) {
-      fetchPosts();
-      return;
-    }
-    setLoading(true);
-    const results = await searchCommunityPosts(searchKeyword);
-    if (results) setPosts(results);
-    setLoading(false);
-  };
-  
-  const handleTabClick = async (tabValue: CommunityCategory) => {
-  setActiveTab(tabValue);
-
-  const positionParams =
-    location?.lat !== undefined && location?.lng !== undefined
-      ? { lat: location.lat, lng: location.lng, distance: 3 }
-      : undefined;
-
-  if (tabValue === "HOT") {
-    setLoading(true);
-    try {
-      const data = await getCommunityPosts(0, 10, positionParams, "HOT");
-      setPosts(data?.content ?? []);
-    } finally {
-      setLoading(false);
-    }
-    return;
-  }
-
-  if (tabValue === "ALL") {
-    fetchPosts();
-    return;
-  }
-};
-
-
-
+  // 클라이언트 사이드 필터링 (ALL/HOT이 아닐 때만 카테고리 필터 적용)
+  const filteredPosts = activeTab === "ALL" || activeTab === "HOT"
+    ? posts
+    : posts.filter(post => post.category === activeTab);
 
   const tabs: { label: string; value: CommunityCategory }[] = [
     { label: "전체", value: "ALL" },
@@ -124,7 +72,7 @@ export default function CommunityPage() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8">
-      {/* 검색창 */}
+      {/* 검색창 섹션 */}
       <div className="mx-auto mb-10 relative">
         <input
           type="text"
@@ -134,7 +82,7 @@ export default function CommunityPage() {
           placeholder="동네 소식을 검색해보세요"
           className="w-full px-6 py-4 text-lg border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500/20 bg-white shadow-sm"
         />
-        <button onClick={handleSearch} className="absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 text-purple-600 font-bold">
+        <button onClick={handleSearch} className="absolute right-4 top-1/2 -translate-y-1/2 px-4 py-2 text-purple-600 font-bold hover:opacity-70">
           검색
         </button>
       </div>
@@ -145,13 +93,12 @@ export default function CommunityPage() {
         </h2>
       </div>
 
-      {/* 카테고리 탭 */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide md:flex-wrap">
+      {/* 카테고리 탭 섹션 */}
+      <div className="flex gap-2 overflow-x-auto pb-2 md:flex-wrap scrollbar-hide">
         {tabs.map((tab) => (
           <button
             key={tab.value}
-            onClick={() => handleTabClick(tab.value)}
-
+            onClick={() => setActiveTab(tab.value)}
             className={`px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap transition cursor-pointer ${
               activeTab === tab.value
                 ? "bg-purple-600 text-white border-purple-600 shadow-md"
@@ -163,17 +110,17 @@ export default function CommunityPage() {
         ))}
       </div>
 
-      {/* 작성 버튼 */}
+      {/* 글 작성 버튼 */}
       <div className="flex justify-end my-8">
-        <button onClick={handleWriteClick} className="px-6 py-2.5 rounded-full bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition shadow-lg shadow-purple-100">
+        <button onClick={handleWriteClick} className="px-6 py-2.5 rounded-full bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition shadow-lg">
           + 글 작성하기
         </button>
       </div>
 
-      {/* 게시글 리스트 */}
+      {/* 게시글 리스트 섹션 */}
       <div className="flex flex-col divide-y divide-gray-100 border-t border-gray-100">
         {loading ? (
-          <div className="py-20 text-center text-gray-400 animate-pulse">데이터를 가져오는 중...</div>
+          <div className="py-20 text-center text-gray-400">데이터를 가져오는 중...</div>
         ) : filteredPosts.length === 0 ? (
           <div className="py-20 text-center text-gray-400">게시글이 없습니다.</div>
         ) : (
@@ -208,12 +155,12 @@ export default function CommunityPage() {
               </div>
               
               {post.thumbnailUrl && (
-                <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                <div className="w-24 h-24 relative rounded-2xl overflow-hidden flex-shrink-0 border">
                   <Image
                     src={post.thumbnailUrl}
                     alt={post.title}
                     fill
-                    className="object-cover transition group-hover:scale-105"
+                    className="object-cover group-hover:scale-105 transition"
                   />
                 </div>
               )}

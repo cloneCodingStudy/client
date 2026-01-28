@@ -1,68 +1,22 @@
-import { Client, StompSubscription } from "@stomp/stompjs";
+import api from "@/api/axiosInstance";
+import { ApiResponse } from "@/types/api";
 
-class ChatService {
-  private client: Client | null = null;
-  private notificationCallbacks: Set<(msg: any) => void> = new Set();
-  private isSubscribedNotifications: boolean = false;
+export const chatService = {
+  getRooms: async () => {
+    const res = await api.get<ApiResponse<any[]>>("/api/chat-rooms/rooms");
+    return res.data.data;
+  },
 
-  connect(token: string) {
-    if (this.client?.active) return;
-
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/^http/, "ws");
-    const connectionUrl = `${apiBaseUrl}/ws-stomp?token=${encodeURIComponent(token)}`;
-
-    this.client = new Client({
-      brokerURL: connectionUrl,
-      connectHeaders: { Authorization: `Bearer ${token}` },
-      reconnectDelay: 5000,
-      debug: (str) => console.log("STOMP Debug:", str),
-      onConnect: () => {
-        console.log("STOMP Connected");
-        
-        if (this.client?.connected && !this.isSubscribedNotifications) {
-          this.client.subscribe("/user/queue/notifications", (message) => {
-            const data = JSON.parse(message.body);
-            console.log("새 알림 도착:", data);
-            this.notificationCallbacks.forEach(cb => cb(data));
-          });
-          this.isSubscribedNotifications = true;
-        }
-      },
-      onDisconnect: () => {
-        this.isSubscribedNotifications = false;
-      }
+  createRoom: async (title: string, sellerId: number, userId: number) => {
+    const res = await api.post<number>("/api/chat-rooms/rooms", {
+      title,
+      userIds: [userId, sellerId],
     });
+    return res.data;
+  },
 
-    this.client.activate();
+  getMessages: async (roomId: number) => {
+    const res = await api.get<ApiResponse<any[]>>(`/api/chat-rooms/rooms/${roomId}/messages`);
+    return res.data.data;
   }
-
-  addNotificationHandler(callback: (msg: any) => void) {
-    this.notificationCallbacks.add(callback);
-    return () => {
-      this.notificationCallbacks.delete(callback);
-    };
-  }
-
-  subscribe(topic: string, callback: (msg: any) => void): StompSubscription | null {
-    if (!this.client || !this.client.connected) return null;
-    return this.client.subscribe(topic, (message) => {
-      const data = JSON.parse(message.body);
-      callback(data);
-    });
-  }
-
-  sendMessage(chatMessage: any) {
-    if (this.isConnected()) {
-      this.client?.publish({
-        destination: "/app/chat/sendMessage",
-        body: JSON.stringify(chatMessage),
-      });
-    }
-  }
-
-  isConnected(): boolean {
-    return !!this.client && this.client.connected;
-  }
-}
-
-export const chatService = new ChatService();
+};

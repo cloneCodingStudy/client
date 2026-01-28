@@ -1,10 +1,10 @@
-import Header from "@/components/_common/Header";
+import Header from "@/components/common/Header";
 import "./globals.css";
-import Footer from "@/components/_common/Footer";
+import Footer from "@/components/common/Footer";
 import { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
-import NotificationListener from "@/components/NotificationListener";
+import NotificationListener from "@/components/global/NotificationListener";
 
 export const metadata: Metadata = {
   title: "빌려요 Billioyo",

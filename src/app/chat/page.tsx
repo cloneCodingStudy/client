@@ -2,35 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import axios from "axios";
-import { MagnifyingGlassIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { ChatRoomResponse } from "@/types/chat";
+import { chatService } from "@/services/chatService";
 
 export default function ChatListPage() {
   const [rooms, setRooms] = useState<ChatRoomResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  const fetchRooms = async () => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
-      
-      const response = await axios.get(`${apiUrl}/chat-rooms/rooms`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.data && response.data.data) {
-        setRooms(response.data.data);
+    const fetchRooms = async () => {
+      try {
+        const data = await chatService.getRooms();
+        if (data) setRooms(data);
+      } catch (error) {
+        console.error("목록 로드 실패:", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("채팅방 목록을 불러오는데 실패했습니다.", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  fetchRooms();
-}, []);
+    };
+    fetchRooms();
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto mt-8 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm min-h-[600px] flex flex-col">

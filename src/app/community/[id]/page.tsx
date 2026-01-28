@@ -4,36 +4,26 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { FlagIcon } from "@heroicons/react/24/outline";
-import { getCommunityPost, createCommunityComment } from "@/data/actions/community.api";
-import { CommunityPost } from "@/types/community";
+import { useCommunity } from "@/hooks/domain/useCommunity";
 import useUserStore from "@/store/useUserStore";
 import toast from "react-hot-toast";
-import ReportModal from "@/components/reportModal";
+import ReportModal from "@/components/common/reportModal";
 
 export default function CommunityDetailPage() {
   const { id } = useParams();
-  const [post, setPost] = useState<CommunityPost | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useUserStore();
   const [commentInput, setCommentInput] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
-  const { user } = useUserStore();
 
-  // 상세조회
-  const fetchPost = async () => {
-    if (!id) return;
-    setLoading(true);
-    const data = await getCommunityPost(Number(id));
-    console.log(data);
-    setPost(data);
-    setLoading(false);
-  };
+  const { post, loading, fetchPostDetail, handleAddComment } = useCommunity();
 
   useEffect(() => {
-    fetchPost();
-  }, [id]);
+    if (id) {
+      fetchPostDetail(Number(id));
+    }
+  }, [id, fetchPostDetail]);
 
-  // 댓글 작성
-  const handleComment = async (e: React.FormEvent) => {
+  const onCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) {
@@ -45,13 +35,10 @@ export default function CommunityDetailPage() {
       return;
     }
 
-    const success = await createCommunityComment(Number(id), commentInput);
+    const success = await handleAddComment(Number(id), commentInput);
     if (success) {
-      toast.success("댓글이 등록되었습니다.");
       setCommentInput("");
-      await fetchPost();
-    } else {
-      toast.error("댓글 등록에 실패했습니다.");
+      await fetchPostDetail(Number(id));
     }
   };
 
@@ -67,15 +54,15 @@ export default function CommunityDetailPage() {
             <div className="w-12 h-12 rounded-full bg-gray-200" />
             <div>
               <p className="font-semibold text-lg">{post.username}</p>
-              <p className="text-sm text-gray-500">{post.createdAt}</p>
+              <p className="text-sm text-gray-500">
+                {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
+              </p>
             </div>
           </div>
 
-          {/* 신고하기 버튼 */}
           <button
             onClick={() => setShowReportModal(true)}
             className="flex items-center gap-1 text-gray-500 hover:text-red-500 transition-colors text-sm"
-            title="신고하기"
           >
             <FlagIcon className="w-5 h-5" />
             <span>신고</span>
@@ -88,18 +75,18 @@ export default function CommunityDetailPage() {
         {/* 본문 */}
         <div className="text-gray-800 whitespace-pre-line leading-relaxed mb-6">{post.content}</div>
 
-        {/* 이미지 */}
+        {/* 이미지 섹션 */}
         {post.imageUrls && post.imageUrls.length > 0 && (
           <div className="grid grid-cols-2 gap-3 mb-10">
             {post.imageUrls.map((img) => (
-              <div key={img} className="relative w-full h-56 rounded-lg overflow-hidden">
+              <div key={img} className="relative w-full h-56 rounded-lg overflow-hidden border">
                 <Image src={img} alt="첨부 이미지" fill unoptimized className="object-contain" />
               </div>
             ))}
           </div>
         )}
 
-        {/* 댓글 */}
+        {/* 댓글 섹션 */}
         <section>
           <h2 className="text-xl font-semibold mb-4">댓글</h2>
 
@@ -118,18 +105,18 @@ export default function CommunityDetailPage() {
             </ul>
           )}
 
-          {/* 댓글 입력 */}
-          <form onSubmit={handleComment} className="flex gap-2 mt-4">
+          {/* 댓글 입력 폼 */}
+          <form onSubmit={onCommentSubmit} className="flex gap-2 mt-4">
             <input
               type="text"
-              placeholder={`댓글을 입력하세요`}
+              placeholder="댓글을 입력하세요"
               value={commentInput}
               onChange={(e) => setCommentInput(e.target.value)}
-              className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-purple/40"
+              className="flex-1 border rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-purple/40 outline-none"
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-primary-purple text-white rounded-lg hover:bg-primary-purple-alt transition"
+              className="px-4 py-2 bg-primary-purple text-white rounded-lg hover:bg-opacity-90 transition"
             >
               댓글 쓰기
             </button>

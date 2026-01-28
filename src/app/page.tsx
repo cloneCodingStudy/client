@@ -1,73 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import useUserStore from "@/store/useUserStore";
+import { useRouter } from "next/navigation";
 import {
-  HomeIcon,
-  UserIcon,
-  HeartIcon,
-  TicketIcon,
-  TruckIcon,
-  WrenchScrewdriverIcon,
   ChevronRightIcon,
-  TvIcon,
   MapPinIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
-import LocationSection from "@/components/LocationSection";
 
-// API 함수 임포트
-import { getPopularProducts } from "@/data/actions/products.api"; 
-import { getCommunityPosts } from "@/data/actions/community.api";
-import { ProductListItem } from "@/types/product";
-import { CommunityPost } from "@/types/community";
+import LocationSection from "@/components/domain/map/LocationSection";
+import { useHomeData } from "@/hooks/pages/useHomeData";
+import useUserStore from "@/store/useUserStore";
+import { CATEGORIES } from "@/constants/categories";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUserStore();
-
-  // 상태 관리
-  const [productList, setProductList] = useState<ProductListItem[]>([]);
-  const [communityPostList, setCommunityPostList] = useState<CommunityPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const categories = [
-    { icon: HomeIcon, label: "생활용품", href: "/category/lifestyle" },
-    { icon: UserIcon, label: "의류/잡화", href: "/category/beauty" },
-    { icon: HeartIcon, label: "육아", href: "/category/childcare" },
-    { icon: TicketIcon, label: "레저/취미", href: "/category/leisure" },
-    { icon: HeartIcon, label: "반려동물", href: "/category/pet" },
-    { icon: TruckIcon, label: "자동차/정비", href: "/category/car" },
-    { icon: TvIcon, label: "전자기기", href: "/category/electronics" },
-    { icon: WrenchScrewdriverIcon, label: "수리/공구", href: "/category/repair" },
-  ];
-
-  // 데이터 페칭
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // 메인 페이지이므로 0페이지, 4개씩만 가져오도록 설정
-        const [products, community] = await Promise.all([
-          getPopularProducts(0, 4),
-          getCommunityPosts(0, 4)
-        ]);
-
-        if (products) setProductList(products.content.slice(0, 4));
-        if (community) setCommunityPostList(community.content);
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  
+  const { productList, communityPostList, isLoading } = useHomeData();
 
   const handleChatClick = (e: React.MouseEvent) => {
     const token = localStorage.getItem("accessToken");
@@ -96,8 +48,12 @@ export default function HomePage() {
       <section>
         <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">카테고리별 탐색</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map((category, index) => (
-            <Link key={index} href={category.href} className="flex flex-col items-center p-6 bg-white rounded-xl border border-[var(--color-border)] hover:shadow-md hover:bg-[#FAFAFF] transition-all group">
+          {CATEGORIES.map((category, index) => (
+            <Link 
+              key={index} 
+              href={category.href} 
+              className="flex flex-col items-center p-6 bg-white rounded-xl border border-[var(--color-border)] hover:shadow-md hover:bg-[#FAFAFF] transition-all group"
+            >
               <div className="w-12 h-12 bg-[var(--color-primary)]/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-[var(--color-primary)]/20">
                 <category.icon className="w-6 h-6 text-[var(--color-primary)]" />
               </div>
@@ -117,11 +73,17 @@ export default function HomePage() {
         </div>
         
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center py-10">로딩 중...</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center py-10 text-gray-400">
+            데이터를 불러오는 중입니다...
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {productList.map((product) => (
-              <Link href={`/products/${product.id}`} key={product.id} className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow">
+              <Link 
+                href={`/products/${product.id}`} 
+                key={product.id} 
+                className="bg-white rounded-xl border border-[var(--color-border)] overflow-hidden hover:shadow-lg transition-shadow"
+              >
                 <div className="relative h-40 bg-gray-200">
                   <Image 
                     src={product.imageUrl || "/images/공구.jpg"} 
@@ -136,7 +98,7 @@ export default function HomePage() {
                     <MapPinIcon className="w-4 h-4 mr-1" />
                     {product.seller?.nickname || "익명"}
                   </div>
-                  <div className="flex items-center justify-between font-bold text-[var(--color-primary)]">
+                  <div className="font-bold text-[var(--color-primary)]">
                     {product.price.toLocaleString()}원
                   </div>
                 </div>

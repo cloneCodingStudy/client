@@ -3,27 +3,28 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { getProduct, updateProduct } from "@/data/actions/products.api";
-import ImageUpload from "@/components/ImageUpload";
-import MapModal from "@/components/mapModal";
+
+import { useProducts } from "@/hooks/domain/useProducts";
+import ImageUpload from "@/components/common/ImageUpload";
+import MapModal from "@/components/common/mapModal";
 
 export default function ProductEditPage() {
   const router = useRouter();
   const { id } = useParams();
+  const productId = Number(id);
 
-  const [loading, setLoading] = useState(true);
+  const { product, loading, fetchProductDetail, updateProduct } = useProducts();
 
-  // 기존 상품 데이터
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [location, setLocation] = useState("");
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    price: "",
+    location: "",
+    description: "",
+  });
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [description, setDescription] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  
   const [showMapModal, setShowMapModal] = useState(false);
-  const [tempLocation, setTempLocation] = useState<{ neighborhood: string; lat: number; lng: number } | null>(null);
 
   const categories = [
     { label: "생활용품", value: "LIVING" },
@@ -37,177 +38,152 @@ export default function ProductEditPage() {
   ];
 
   useEffect(() => {
-    async function fetchData() {
-      if (!id) return;
-
-      const data = await getProduct(Number(id));
-      if (!data) {
-        toast.error("상품 정보를 불러오지 못했습니다.");
-        router.push("/mypage/products");
-        return;
-      }
-
-      setTitle(data.title);
-      setCategory(data.category);
-      setPrice(String(data.price));
-      setLocation(data.location);
-      setDescription(data.description);
-      setImageUrls([data.image]);
-      
-      // 기존 좌표가 있으면 설정
-      if (data.latitude && data.longitude) {
-        setCoords({ lat: data.latitude, lng: data.longitude });
-      }
-      
-      setLoading(false);
+    if (productId) {
+      fetchProductDetail(productId);
     }
-    fetchData();
-  }, [id]);
+  }, [productId, fetchProductDetail]);
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        title: product.title,
+        category: product.category,
+        price: String(product.price),
+        location: product.location,
+        description: product.description,
+      });
+      setImageUrls([product.image]);
+      if (product.latitude && product.longitude) {
+        setCoords({ lat: product.latitude, lng: product.longitude });
+      }
+    }
+  }, [product]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleLocationSelect = (address: string, lat: number, lng: number) => {
-    setLocation(address);
+    setFormData((prev) => ({ ...prev, location: address }));
     setCoords({ lat, lng });
   };
 
-  const handleMapConfirm = () => {
-    if (location && coords) {
-      setShowMapModal(false);
-      toast.success("거래 장소가 설정되었습니다.");
-    } else {
-      toast.error("지도에서 위치를 선택해주세요.");
-    }
-  };
-
-  if (loading) return <p className="text-center mt-10">상품 정보를 불러오는 중...</p>;
-
-  // 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!category) return toast.error("카테고리를 선택해주세요.");
-    if (!title.trim()) return toast.error("상품명을 입력해주세요.");
-    if (!price.trim()) return toast.error("가격을 입력해주세요.");
-    if (!location.trim()) return toast.error("거래 장소를 설정해주세요.");
-    if (!description.trim()) return toast.error("설명을 입력해주세요.");
+    if (!formData.category) return toast.error("카테고리를 선택해주세요.");
+    if (!formData.title.trim()) return toast.error("상품명을 입력해주세요.");
+    if (!formData.price.trim()) return toast.error("가격을 입력해주세요.");
+    if (!formData.location.trim()) return toast.error("거래 장소를 설정해주세요.");
+    if (!formData.description.trim()) return toast.error("설명을 입력해주세요.");
 
     const payload = {
-      title,
-      category,
-      price: Number(price),
-      location,
+      ...formData,
+      price: Number(formData.price),
       latitude: coords?.lat,
       longitude: coords?.lng,
-      description,
       imageUrls,
     };
 
-    const ok = await updateProduct(Number(id), payload);
-
-    if (ok) {
-      toast.success("상품이 수정되었습니다!");
+    const success = await updateProduct(productId, payload);
+    if (success) {
       router.push(`/products/${id}`);
-    } else {
-      toast.error("수정에 실패했습니다.");
     }
   };
+
+  if (loading && !product) return <p className="text-center mt-10">상품 정보를 불러오는 중...</p>;
 
   return (
     <>
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <div className="text-sm text-gray-600 p-4 rounded-lg mb-8">✨ 상품 정보를 수정하세요.</div>
+        <div className="text-sm text-gray-600 p-4 rounded-lg mb-8 bg-gray-50 border border-gray-100">
+          ✨ 상품 정보를 수정하세요.
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 카테고리 */}
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="border rounded-lg px-4 py-2 text-sm w-full focus:ring-[var(--color-primary)] focus:outline-none"
+            name="category"
+            value={formData.category}
+            onChange={handleInputChange}
+            className="border rounded-lg px-4 py-2 text-sm w-full focus:ring-2 focus:ring-purple-100 focus:border-primary-purple focus:outline-none transition-all"
           >
-            <option value="" disabled hidden>
-              카테고리를 선택해주세요 (필수)
-            </option>
+            <option value="" disabled hidden>카테고리를 선택해주세요 (필수)</option>
             {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
 
-          {/* 상품명 */}
-          <div className="flex items-center justify-between border-b border-gray-300 py-3 my-2">
+          <div className="border-b border-gray-200 py-3">
             <input
+              name="title"
               type="text"
               placeholder="상품명을 입력해주세요."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-lg focus:outline-none bg-transparent"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="w-full text-lg font-bold focus:outline-none bg-transparent placeholder:font-normal"
             />
           </div>
 
-          {/* 가격 */}
-          <div className="flex items-center justify-between border-b border-gray-300 py-3 my-2">
+          <div className="border-b border-gray-200 py-3">
             <input
+              name="price"
               type="number"
               placeholder="대여 가격 (원)"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              value={formData.price}
+              onChange={handleInputChange}
               className="w-full text-lg focus:outline-none bg-transparent"
             />
           </div>
 
-          {/* 거래 희망 장소 */}
           <div className="space-y-3 py-4">
             <label className="text-sm font-bold text-gray-700">거래 희망 장소 설정</label>
-            
             <button
               type="button"
               onClick={() => setShowMapModal(true)}
-              className="w-full py-3 px-4 border-2 border-dashed border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 border-2 border-dashed border-purple-200 rounded-xl text-purple-600 hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
             >
               <span>📍</span>
-              <span className="font-medium">
-                {location ? "거래 장소 변경하기" : "지도에서 거래 장소 선택"}
-              </span>
+              <span className="font-medium">{formData.location ? "거래 장소 변경하기" : "지도에서 거래 장소 선택"}</span>
             </button>
 
-            {location && (
-              <div className="flex items-center gap-2 border border-gray-200 rounded-lg py-3 px-4 bg-purple-50">
-                <span className="text-purple-500">📍</span>
-                <span className="text-purple-700 font-medium">{location}</span>
+            {formData.location && (
+              <div className="flex items-center gap-2 border border-purple-100 rounded-xl py-3.5 px-4 bg-purple-50/50">
+                <span className="text-purple-500 text-xs">선택된 위치:</span>
+                <span className="text-purple-700 font-semibold text-sm">{formData.location}</span>
               </div>
             )}
           </div>
 
           <textarea
+            name="description"
             placeholder="상품 설명을 입력해주세요."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={formData.description}
+            onChange={handleInputChange}
             rows={10}
-            className="w-full resize-none rounded-lg p-4 text-sm border border-gray-300 focus:outline-none"
+            className="w-full resize-none rounded-xl p-5 text-sm border border-gray-200 focus:border-primary-purple focus:ring-4 focus:ring-purple-50 focus:outline-none transition-all"
           />
 
-          {/* 사진 첨부 */}
           <ImageUpload imageUrls={imageUrls} setImageUrls={setImageUrls} />
 
-          {/* 버튼 */}
-          <div className="flex justify-end mt-8">
+          <div className="flex justify-end mt-10">
             <button
               type="submit"
-              className="cursor-pointer px-6 py-2 bg-[var(--color-primary-purple)] text-white rounded-lg hover:bg-[var(--color-hover-purple)] transition font-semibold"
+              disabled={loading}
+              className="px-10 py-3 bg-primary-purple text-white rounded-xl hover:bg-opacity-90 transition-all font-bold shadow-lg shadow-purple-100 active:scale-95 disabled:opacity-50"
             >
-              상품 수정하기
+              {loading ? "수정 중..." : "상품 수정하기"}
             </button>
           </div>
         </form>
       </div>
 
-      {/* 지도 모달 */}
       <MapModal
         isOpen={showMapModal}
         onClose={() => setShowMapModal(false)}
-        onConfirm={handleMapConfirm}
+        onConfirm={() => setShowMapModal(false)}
         onLocationSelect={handleLocationSelect}
-        currentLocation={location}
+        currentLocation={formData.location}
         initialCenter={coords || undefined}
       />
     </>

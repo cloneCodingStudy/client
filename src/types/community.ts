@@ -1,39 +1,38 @@
-//커뮤니티 게시글
-export interface CommunityPost {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  location: string;        
-  latitude?: number;       
-  longitude?: number; 
-  category: CommunityCategory;
-  username: string;
-  thumbnailUrl?: string;
-  imageUrls?: string[];
-  comments?: CommunityComment[];
-}
-
-//커뮤니티 카테고리
 export type CommunityCategory = "ALL" | "HOT" | "INFO" | "TIP" | "PET" | "BBANG" | "LOST";
 
-//커뮤니티 유저
-export interface CommunityUser {
+export interface CommunityPostListItem {
   id: number;
+  title: string;
+  content: string; 
+  category: CommunityCategory;
+  location: string;
+  thumbnailUrl?: string;
   username: string;
-  nickName: string;
-  email: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  createdAt: string;
 }
 
+export interface CommunityPost extends CommunityPostListItem {
+  imageUrls: string[];
+  comments: CommunityComment[];
+  latitude?: number;
+  longitude?: number;
+  isLiked?: boolean;     
+  isBookmarked?: boolean; 
+}
 
-//커뮤니티 댓글
 export interface CommunityComment {
   id: number;
   author: string;
   content: string;
   createdAt: string;
 }
- 
+
+export interface CommunityUser {
+  id: number;
+  username: string;
+  nickName: string;
+  email: string;
+}
